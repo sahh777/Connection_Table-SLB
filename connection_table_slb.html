@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Connection Table — ESP Reference</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #080c12;
+  --bg2:      #0e1420;
+  --bg3:      #141c2e;
+  --gold:     #f5a623;
+  --gold2:    #ffd166;
+  --golddim:  rgba(245,166,35,0.12);
+  --blue:     #2979ff;
+  --bluedim:  rgba(41,121,255,0.12);
+  --text:     #dde3ef;
+  --muted:    #64748b;
+  --border:   rgba(255,255,255,0.07);
+  --ok:       #00e5a0;
+  --okdim:    rgba(0,229,160,0.08);
+  --err:      #ff5252;
+  --errdim:   rgba(255,82,82,0.08);
+}
+*, *::before, *::after { box-sizing: border-box; margin:0; padding:0; }
+
+body {
+  font-family: 'Exo 2', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  background-image:
+    radial-gradient(ellipse 70% 40% at 50% 0%, rgba(245,166,35,0.06) 0%, transparent 60%);
+}
+
+/* ── HEADER ── */
+header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 28px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+header::after {
+  content:'';
+  position:absolute; bottom:-1px; left:0; right:0; height:1px;
+  background: linear-gradient(90deg, transparent 0%, var(--gold) 30%, var(--gold) 70%, transparent 100%);
+  opacity: 0.4;
+}
+.logo {
+  width:38px; height:38px;
+  background: var(--gold);
+  clip-path: polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+  flex-shrink:0;
+}
+.htext h1 {
+  font-family:'Rajdhani',sans-serif;
+  font-size:20px; font-weight:700;
+  letter-spacing:2px; text-transform:uppercase;
+}
+.htext p {
+  font-size:10px; color:var(--gold);
+  letter-spacing:3px; text-transform:uppercase; margin-top:1px;
+}
+.badge {
+  margin-left:auto;
+  border:1px solid var(--golddim);
+  background:var(--golddim);
+  color:var(--gold);
+  font-family:'Share Tech Mono',monospace;
+  font-size:10px; letter-spacing:2px;
+  padding:3px 9px; border-radius:2px;
+}
+
+/* ── TAB NAV ── */
+.tab-nav {
+  display:flex; overflow-x:auto; scrollbar-width:none;
+  padding: 0 28px;
+  border-bottom:1px solid var(--border);
+}
+.tab-nav::-webkit-scrollbar { display:none; }
+.tab-btn {
+  background:none; border:none;
+  color:var(--muted);
+  font-family:'Rajdhani',sans-serif;
+  font-size:12px; font-weight:600;
+  letter-spacing:1.5px; text-transform:uppercase;
+  padding:13px 20px;
+  white-space:nowrap; cursor:pointer;
+  border-bottom:2px solid transparent;
+  margin-bottom:-1px;
+  transition:all .18s;
+  position:relative;
+}
+.tab-btn .num {
+  position:absolute; top:9px; left:6px;
+  font-size:8px; font-family:'Share Tech Mono',monospace;
+  color:var(--gold); opacity:.5;
+}
+.tab-btn:hover { color:var(--text); background:rgba(255,255,255,.03); }
+.tab-btn.active { color:var(--gold); border-bottom-color:var(--gold); background:var(--golddim); }
+
+/* ── CONTENT ── */
+.content {
+  max-width:960px; margin:0 auto;
+  padding: 28px 28px 48px;
+}
+.panel { display:none; }
+.panel.active {
+  display:block;
+  animation: up .25s ease;
+}
+@keyframes up {
+  from { opacity:0; transform:translateY(8px); }
+  to   { opacity:1; transform:translateY(0);   }
+}
+
+.ptitle {
+  font-family:'Rajdhani',sans-serif;
+  font-size:26px; font-weight:700;
+  letter-spacing:3px; text-transform:uppercase;
+  color:var(--gold);
+  text-shadow:0 0 40px rgba(245,166,35,.25);
+  margin-bottom:4px;
+}
+.psub {
+  font-size:11px; color:var(--muted);
+  letter-spacing:2px; text-transform:uppercase;
+  margin-bottom:26px;
+}
+
+/* ── SELECTOR GRID ── */
+.grid {
+  display:grid;
+  grid-template-columns:1fr 120px 1fr;
+  gap:16px;
+  align-items:center;
+}
+@media(max-width:640px){
+  .grid { grid-template-columns:1fr; }
+  .mid { flex-direction:row; }
+  .vline { width:40px; height:2px;
+    background:linear-gradient(to right,var(--gold),var(--blue)); }
+  .vline::before,.vline::after { top:-3px; }
+  .vline::after { left:auto; right:-3px; }
+}
+
+.card {
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:18px 20px;
+  position:relative; overflow:hidden;
+}
+.card::before {
+  content:'';
+  position:absolute; top:0; left:0; right:0; height:2px;
+  background:var(--gold);
+}
+.card.right::before { background:var(--blue); }
+
+.clabel {
+  font-size:9px; font-weight:700;
+  letter-spacing:2px; text-transform:uppercase;
+  color:var(--gold); margin-bottom:14px;
+  display:flex; align-items:center; gap:6px;
+}
+.clabel.right { color:#5fa8ff; }
+.clabel .dot {
+  width:6px; height:6px; border-radius:50%;
+  background:currentColor;
+  box-shadow:0 0 6px currentColor;
+}
+
+.field { margin-bottom:12px; }
+.field:last-child { margin-bottom:0; }
+.flabel {
+  font-family:'Share Tech Mono',monospace;
+  font-size:9px; color:var(--muted);
+  letter-spacing:1.5px; text-transform:uppercase;
+  margin-bottom:5px;
+}
+select {
+  width:100%;
+  background:var(--bg3);
+  border:1px solid var(--border);
+  color:var(--text);
+  padding:9px 30px 9px 11px;
+  border-radius:4px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:12px;
+  cursor:pointer;
+  appearance:none; -webkit-appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 5 5-5' stroke='%23f5a623' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 10px center;
+  transition:border-color .2s, box-shadow .2s;
+}
+select:focus {
+  outline:none;
+  border-color:var(--gold);
+  box-shadow:0 0 0 2px var(--golddim);
+}
+select option { background:#141c2e; }
+
+/* ── MIDDLE ── */
+.mid {
+  display:flex; flex-direction:column;
+  align-items:center; gap:10px;
+}
+.vline {
+  width:2px; height:28px;
+  background:linear-gradient(to bottom,var(--gold),var(--blue));
+  position:relative;
+}
+.vline::before,.vline::after {
+  content:'';
+  position:absolute;
+  width:7px; height:7px; border-radius:50%;
+  left:-2.5px;
+}
+.vline::before { top:-3.5px; background:var(--gold); box-shadow:0 0 8px var(--gold); }
+.vline::after  { bottom:-3.5px; background:var(--blue); box-shadow:0 0 8px var(--blue); }
+
+.getbtn {
+  background:linear-gradient(135deg,var(--gold),#c97d10);
+  color:#070a10;
+  border:none;
+  padding:12px 24px;
+  font-family:'Rajdhani',sans-serif;
+  font-size:15px; font-weight:700;
+  letter-spacing:3px; text-transform:uppercase;
+  border-radius:4px; cursor:pointer;
+  box-shadow:0 4px 20px rgba(245,166,35,.3);
+  transition:all .18s;
+  width:100%;
+}
+.getbtn:hover { transform:translateY(-1px); box-shadow:0 6px 28px rgba(245,166,35,.5); }
+.getbtn:active { transform:translateY(0); }
+
+/* ── RESULT ── */
+.result-area { margin-top:22px; }
+
+.result-ok {
+  background:var(--okdim);
+  border:1px solid var(--ok);
+  border-radius:8px;
+  padding:18px 22px;
+  animation: pop .35s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes pop {
+  from { opacity:0; transform:scale(.95); }
+  to   { opacity:1; transform:scale(1);   }
+}
+.rlabel {
+  font-family:'Share Tech Mono',monospace;
+  font-size:9px; color:var(--ok);
+  letter-spacing:2.5px; text-transform:uppercase;
+  margin-bottom:14px;
+  display:flex; align-items:center; gap:6px;
+}
+.rlabel::before {
+  content:'●';
+  animation:blink 1.5s ease infinite;
+}
+@keyframes blink {
+  0%,100% { opacity:1; }
+  50%      { opacity:.3; }
+}
+
+.specs {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:10px;
+}
+.spec {
+  background:rgba(0,0,0,.35);
+  border:1px solid rgba(0,229,160,.18);
+  border-radius:5px;
+  padding:10px 14px;
+}
+.skey {
+  font-family:'Share Tech Mono',monospace;
+  font-size:8px; color:var(--ok);
+  letter-spacing:2px; text-transform:uppercase;
+  margin-bottom:5px;
+}
+.sval {
+  font-family:'Share Tech Mono',monospace;
+  font-size:14px; color:var(--text);
+}
+
+.result-err {
+  background:var(--errdim);
+  border:1px solid var(--err);
+  border-radius:8px;
+  padding:14px 20px;
+  font-family:'Share Tech Mono',monospace;
+  font-size:12px; color:var(--err);
+  animation: up .25s ease;
+}
+
+/* ── FOOTER ── */
+footer {
+  text-align:center;
+  padding:20px 28px;
+  border-top:1px solid var(--border);
+  display:flex; justify-content:center; gap:28px;
+  margin-top:20px;
+}
+footer a {
+  color:var(--gold);
+  text-decoration:none;
+  font-family:'Share Tech Mono',monospace;
+  font-size:10px; letter-spacing:2px; text-transform:uppercase;
+  display:flex; align-items:center; gap:5px;
+  opacity:.7; transition:opacity .2s;
+}
+footer a:hover { opacity:1; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"></div>
+  <div class="htext">
+    <h1>Connection Table</h1>
+    <p>ESP Component Reference</p>
+  </div>
+  <div class="badge">v1.0</div>
+</header>
+
+<nav class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('tab1')" id="btn-tab1"><span class="num">01</span>Pump To Pump</button>
+  <button class="tab-btn" onclick="switchTab('tab2')" id="btn-tab2"><span class="num">02</span>Pump To AGH</button>
+  <button class="tab-btn" onclick="switchTab('tab3')" id="btn-tab3"><span class="num">03</span>AGH To GS</button>
+  <button class="tab-btn" onclick="switchTab('tab4')" id="btn-tab4"><span class="num">04</span>Pump To GS</button>
+  <button class="tab-btn" onclick="switchTab('tab5')" id="btn-tab5"><span class="num">05</span>GS To Protector</button>
+  <button class="tab-btn" onclick="switchTab('tab6')" id="btn-tab6"><span class="num">06</span>Protector To Motor</button>
+</nav>
+<main class="content">
+
+<div class="panel active" id="tab1">
+  <div class="ptitle">Pump To Pump</div>
+  <div class="psub">Select all four values then click GET</div>
+  <div class="grid">
+
+    <div class="card left">
+      <div class="clabel"><span class="dot"></span>UTP</div>
+      <div class="field">
+        <div class="flabel">UTP Series</div>
+        <select id="tab1-v1"><option value="" disabled selected>— Select —</option><option value="400">400</option><option value="400 (FS)">400 (FS)</option><option value="400 Ext Sft">400 Ext Sft</option><option value="400 (FS) Ext Sft">400 (FS) Ext Sft</option><option value="450">450</option><option value="538">538</option><option value="538 (FS)">538 (FS)</option><option value="540 (FS)">540 (FS)</option><option value="540">540</option><option value="562">562</option><option value="562 (FS)">562 (FS)</option><option value="675">675</option><option value="675 (FS)">675 (FS)</option><option value="725">725</option><option value="862">862</option><option value="950">950</option><option value="1000">1000</option><option value="338">338</option><option value="387">387</option><option value="387 (FS)">387 (FS)</option><option value="387 Ext Sft">387 Ext Sft</option><option value="387 Ext Sft (FS)">387 Ext Sft (FS)</option><option value="387 Ext Sft (FS)">387 Ext Sft (FS)</option></select>
+      </div>
+      <div class="field">
+        <div class="flabel">Shaft UTP</div>
+        <select id="tab1-v2"><option value="" disabled selected>— Select —</option><option value="0.62">0.62</option><option value="0.68">0.68</option><option value="0.87">0.87</option><option value="0.75">0.75</option><option value="1.00">1.00</option><option value="1.18">1.18</option><option value="1.50">1.50</option><option value="1.37">1.37</option><option value="1.75">1.75</option><option value="0.44 H">0.44 H</option></select>
+      </div>
+    </div>
+
+    <div class="mid">
+      <div class="vline"></div>
+      <button class="getbtn" onclick="getResult('tab1')">GET</button>
+      <div class="vline"></div>
+    </div>
+
+    <div class="card right">
+      <div class="clabel right"><span class="dot"></span>LTP</div>
+      <div class="field">
+        <div class="flabel">LTP Series</div>
+        <select id="tab1-v3"><option value="" disabled selected>— Select —</option><option value="400">400</option><option value="400 (FS)">400 (FS)</option><option value="400 Ext Sft">400 Ext Sft</option><option value="400 (FS) Ext Sft">400 (FS) Ext Sft</option><option value="450">450</option><option value="538">538</option><option value="538 (FS)">538 (FS)</option><option value="540 (FS)">540 (FS)</option><option value="540">540</option><option value="562">562</option><option value="562 (FS)">562 (FS)</option><option value="675">675</option><option value="675 (FS)">675 (FS)</option><option value="725">725</option><option value="862">862</option><option value="950">950</option><option value="1000">1000</option><option value="338">338</option><option value="387">387</option><option value="387 (FS)">387 (FS)</option><option value="387 Ext Sft">387 Ext Sft</option><option value="387 Ext Hd (FS)">387 Ext Hd (FS)</option><option value="387 Ext Hd">387 Ext Hd</option><option value="387 Ext Sft (FS)">387 Ext Sft (FS)</option><option value="400 (FS) Ext Hd">400 (FS) Ext Hd</option><option value="562/540">562/540</option><option value="562/540 (FS)">562/540 (FS)</option><option value="675/738 or 540">675/738 or 540</option><option value="675/738 or 540 (FS)">675/738 or 540 (FS)</option><option value="862/738">862/738</option><option value="1000/738">1000/738</option><option value="400 Ext Hd">400 Ext Hd</option></select>
+      </div>
+      <div class="field">
+        <div class="flabel">Shaft LTP</div>
+        <select id="tab1-v4"><option value="" disabled selected>— Select —</option><option value="0.62">0.62</option><option value="0.68">0.68</option><option value="0.87">0.87</option><option value="0.75">0.75</option><option value="1.00">1.00</option><option value="1.18">1.18</option><option value="1.50">1.50</option><option value="1.37">1.37</option><option value="1.75">1.75</option><option value="0.44 H">0.44 H</option></select>
+      </div>
+    </div>
+
+  </div>
+  <div class="result-area" id="tab1-result"></div>
+</div>
+
+<div class="panel" id="tab2">
+  <div class="ptitle">Pump To AGH</div>
+  <div class="psub">Select all four values then click GET</div>
+  <div class="grid">
+
+    <div class="card left">
+      <div class="clabel"><span class="dot"></span>Pump</div>
+      <div class="field">
+        <div class="flabel">Pump Series</div>
+        <select id="tab2-v1"><option value="" disabled selected>— Select —</option><option value="338">338</option><option value="387 (FS)">387 (FS)</option><option value="387">387</option><option value="387 Ext Sft">387 Ext Sft</option><option value="387 (FS) Ext Sft">387 (FS) Ext Sft</option><option value="400">400</option><option value="400 (FS)">400 (FS)</option><option value="400 Ext Sft">400 Ext Sft</option><option value="400 (FS) Ext Sft">400 (FS) Ext Sft</option><option value="538">538</option><option value="538 (FS)">538 (FS)</option><option value="538/540">538/540</option><option value="540">540</option><option value="540 + 538">540 + 538</option><option value="540 (FS)">540 (FS)</option><option value="562">562</option><option value="562 (FS)">562 (FS)</option><option value="675">675</option><option value="725">725</option><option value="862">862</option></select>
+      </div>
+      <div class="field">
+        <div class="flabel">Shaft Pump</div>
+        <select id="tab2-v2"><option value="" disabled selected>— Select —</option><option value="0.62">0.62</option><option value="0.68">0.68</option><option value="0.87">0.87</option><option value="0.75">0.75</option><option value="1.00">1.00</option><option value="1.18">1.18</option><option value="1.37">1.37</option></select>
+      </div>
+    </div>
+
+    <div class="mid">
+      <div class="vline"></div>
+      <button class="getbtn" onclick="getResult('tab2')">GET</button>
+      <div class="vline"></div>
+    </div>
+
+    <div class="card right">
+      <div class="clabel right"><span class="dot"></span>AGH</div>
+      <div class="field">
+        <div class="flabel">AGH Series</div>
+        <select id="tab2-v3"><option value="" disabled selected>— Select —</option><option value="387 Adapter to AGH">387 Adapter to AGH</option><option value="387">387</option><option value="387 (FS)">387 (FS)</option><option value="387 Ext Hd">387 Ext Hd</option><option value="387 (FS) Ext Hd">387 (FS) Ext Hd</option><option value="400">400</option><option value="400 (FS)">400 (FS)</option><option value="400 Ext Hd">400 Ext Hd</option><option value="400 (FS) Ext Hd">400 (FS) Ext Hd</option><option value="540">540</option><option value="540 AGH">540 AGH</option><option value="538 Poseidon">538 Poseidon</option><option value="538">538</option><option value="538 (FS)">538 (FS)</option><option value="S50-90 Series Poseidon">S50-90 Series Poseidon</option><option value="400 Adapter to AGH">400 Adapter to AGH</option><option value="400Ext Hd Adapter AGH">400Ext Hd Adapter AGH</option><option value="540 (FS)">540 (FS)</option><option value="562">562</option><option value="562 (FS)">562 (FS)</option><option value="675/562">675/562</option><option value="725/562">725/562</option><option value="862/562">862/562</option></select>
+      </div>
+      <div class="field">
+        <div class="flabel">Shaft AGH</div>
+        <select id="tab2-v4"><option value="" disabled selected>— Select —</option><option value="0.62">0.62</option><option value="0.68">0.68</option><option value="0.87">0.87</option><option value="0.75">0.75</option><option value="1.00">1.00</option><option value="1.18">1.18</option></select>
+      </div>
+    </div>
+
+  </div>
+  <div class="result-area" id="tab2-result"></div>
+</div>
+
+<div class="panel" id="tab3">
+  <div class="ptitle">AGH To GS</div>
+  <div class="psub">Select all four values then click GET</div>
+  <div class="grid">
+
+    <div class="card left">
+      <div class="clabel"><span class="dot"></span>AGH</div>
+      <div class="field">
+        <div class="flabel">AGH Series</div>
+        <select id="tab3-v1"><option value="" disabled selected>— Select —</option><option value="387">387</option><option value="387 (FS)">387 (FS)</option><option value="387 (FS) Ext Sft">387 (FS) Ext Sft</option><option value="400">400</option><option value="400 (FS)">400 (FS)</option><option value="540">540</option><option value="540 (FS)">540 (FS)</option><option value="538">538</option><option value="538 (FS)">538 (FS)</option></select>
+      </div>
+      <div class="field">
+        <div class="flabel">Shaft AGH</div>
+        <select id="tab3-v2"><option value="" disabled selected>— Select —</option><option value="0.68">0.68</option><option value="0.87">0.87</option><option value="1.00">1.00</option></select>
+      </div>
+    </div>
+
+    <div class="mid">
+      <div class="vline"></div>
+      <button class="getbtn" onclick="getResult('tab3')">GET</button>
+      <div class="vline"></div>
+    </div>
+
+    <div class="card right">
+      <div class="clabel right"><span class="dot"></span>GS</div>
+      <div class="field">
+        <div class="flabel">GS Series</div>
+        <select id="tab3-v3"><option value="" disabled selected>— Select —</option><option value="387">387</option><option value="387 (FS)">387 (FS)</option><option value="387 (FS) Ext Hd">387 (FS) Ext Hd</option><option value="387 Ext Hd">387 Ext Hd</option><option value="400">400</option><option value="400 (FS)">400 (FS)</option><option value="540Adapter : intake/GS">540Adapter : intake/GS</option><option value="400 Ext Hd">400 Ext Hd</option><option value="400 (FS) Ext Hd">400 (FS) Ext Hd</option><option value="540">540</option><option value="538">538</option><option value="538 (FS)">538 (FS)</option></select>
+      </div>
+      <div class="field">
+        <div class="flabel">Shaft GS</div>
+        <select id="tab3-v4"><option value="" disabled selected>— Select —</option><option value="0.87">0.87</option><option value="1.18">1.18</option></select>
+      </div>
+    </div>
+
+  </div>
+  <div class="result-area" id="tab3-result"></div>
+</div>
+
+<div class="panel" id="tab4">
+  <div class="ptitle">Pump To GS</div>
+  <div class="psub">Select all four values then click GET</div>
+  <div class="grid">
+
+    <div class="card left">
+      <div class="clabel"><span class="dot"></span>Pump</div>
+      <div class="field">
+        <div class="flabel">Pump Series</div>
+        <select id="tab4-v1"><option value="" disabled selected>— Select —</option><option value="338">338</option><option value="387 (FS)">387 (FS)</option><option value="387">387</option><option value="387 Ext Sft (FS)">387 Ext Sft (FS)</option><option value="400">400</option><option value="400 (FS)">400 (FS)</option><option value="400 Ext Sft">400 Ext Sft</option><option value="400 Ext Sft (FS)">400 Ext Sft (FS)</option><option value="538/540 (FS)">538/540 (FS)</option><option value="538">538</option><option value="538/540">538/540</option><option value="540">540</option><option value="540 (FS)">540 (FS)</option><option value="562">562</option><option value="675">675</option><option value="675 (FS)">675 (FS)</option></select>
+      </div>
+      <div class="field">
+        <div class="flabel">Shaft Pump</div>
+        <select id="tab4-v2"><option value="" disabled selected>— Select —</option><option value="0.44 H">0.44 H</option><option value="0.62">0.62</option><option value="0.68">0.68</option><option value="0.87">0.87</option><option value="1.00">1.00</option><option value="0.75">0.75</option><option value="1.18">1.18</option></select>
+      </div>
+    </div>
+
+    <div class="mid">
+      <div class="vline"></div>
+      <button class="getbtn" onclick="getResult('tab4')">GET</button>
+      <div class="vline"></div>
+    </div>
+
+    <div class="card right">
+      <div class="clabel right"><span class="dot"></span>GS</div>
+      <div class="field">
+        <div class="flabel">GS Series</div>
+        <select id="tab4-v3"><option value="" disabled selected>— Select —</option><option value="338/375">338/375</option><option value="387 Adapter to Intake or GS">387 Adapter to Intake or GS</option><option value="400 Adapter to Intake or GS">400 Adapter to Intake or GS</option><option value="540 Adapter to Intake or GS">540 Adapter to Intake or GS</option><option value="338/375">338/375</option><option value="387">387</option><option value="387 (FS)">387 (FS)</option><option value="562/540 Adapter to Intake or GS">562/540 Adapter to Intake or GS</option><option value="387 Ext Hd">387 Ext Hd</option><option value="387 Poseidon">387 Poseidon</option><option value="387 (FS) Ext Hd">387 (FS) Ext Hd</option><option value="387 Poseidon (FS) Ext Hd">387 Poseidon (FS) Ext Hd</option><option value="387 Ext Hd (FS)">387 Ext Hd (FS)</option><option value="387 Poseidon Ext Hd">387 Poseidon Ext Hd</option><option value="387 Poseidon Ext Hd (FS)">387 Poseidon Ext Hd (FS)</option><option value="387 VGSA D20-60">387 VGSA D20-60</option><option value="338 Adapter to Intake or GS">338 Adapter to Intake or GS</option><option value="400">400</option><option value="400 (FS)">400 (FS)</option><option value="400 VGSA D20-60">400 VGSA D20-60</option><option value="400 Poseidon">400 Poseidon</option><option value="387 Poseidon Ext Hd or VGSA">387 Poseidon Ext Hd or VGSA</option><option value="400 Ext Hd">400 Ext Hd</option><option value="400 Ext Hd (FS)">400 Ext Hd (FS)</option><option value="400 Poseidon (HS)">400 Poseidon (HS)</option><option value="540 (FS)">540 (FS)</option><option value="540">540</option><option value="675/540 Adapter to Intake or GS">675/540 Adapter to Intake or GS</option><option value="675/738 Adapter to Intake or GS">675/738 Adapter to Intake or GS</option><option value="562/540">562/540</option><option value="675/540">675/540</option><option value="675/738">675/738</option><option value="538 Adapter to GS">538 Adapter to GS</option><option value="675/540 or 738 (FS)">675/540 or 738 (FS)</option><option value="675/540 or 738">675/540 or 738</option></select>
+      </div>
+      <div class="field">
+        <div class="flabel">Shaft GS</div>
+        <select id="tab4-v4"><option value="" disabled selected>— Select —</option><option value="0.68">0.68</option><option value="0.87">0.87</option><option value="1.18">1.18</option></select>
+      </div>
+    </div>
+
+  </div>
+  <div class="result-area" id="tab4-result"></div>
+</div>
+
+<div class="panel" id="tab5">
+  <div class="ptitle">GS To Protector</div>
+  <div class="psub">Select all four values then click GET</div>
+  <div class="grid">
+
+    <div class="card left">
+      <div class="clabel"><span class="dot"></span>GS</div>
+      <div class="field">
+        <div class="flabel">GS Series</div>
+        <select id="tab5-v1"><option value="" disabled selected>— Select —</option><option value="338">338</option><option value="338 (FS)">338 (FS)</option><option value="387 (FS)">387 (FS)</option><option value="387">387</option><option value="387 Intake">387 Intake</option><option value="387 GS">387 GS</option><option value="400">400</option><option value="400 (FS)">400 (FS)</option><option value="400 Intake">400 Intake</option><option value="400 GS">400 GS</option><option value="540 or 562">540 or 562</option><option value="540 or 562 (FS)">540 or 562 (FS)</option><option value="540">540</option><option value="540 (FS)">540 (FS)</option><option value="675/540">675/540</option><option value="675/540 (FS)">675/540 (FS)</option><option value="675/738">675/738</option><option value="675/738 (FS)">675/738 (FS)</option></select>
+      </div>
+      <div class="field">
+        <div class="flabel">Shaft GS</div>
+        <select id="tab5-v2"><option value="" disabled selected>— Select —</option><option value="0.68">0.68</option><option value="0.87">0.87</option><option value="1.18">1.18</option></select>
+      </div>
+    </div>
+
+    <div class="mid">
+      <div class="vline"></div>
+      <button class="getbtn" onclick="getResult('tab5')">GET</button>
+      <div class="vline"></div>
+    </div>
+
+    <div class="card right">
+      <div class="clabel right"><span class="dot"></span>Pro</div>
+      <div class="field">
+        <div class="flabel">Pro Series</div>
+        <select id="tab5-v3"><option value="" disabled selected>— Select —</option><option value="375">375</option><option value="325">325</option><option value="387">387</option><option value="387 (FS)">387 (FS)</option><option value="400">400</option><option value="400 (FS) Ext Hd">400 (FS) Ext Hd</option><option value="540 Adapter to Protector">540 Adapter to Protector</option><option value="325 (FS) Ext Hd">325 (FS) Ext Hd</option><option value="400 (FS)">400 (FS)</option><option value="450 Adapter to Protector">450 Adapter to Protector</option><option value="562 Adapter to Protector">562 Adapter to Protector</option><option value="540 or 562">540 or 562</option><option value="540 or 562 (FS)">540 or 562 (FS)</option><option value="540 or 562 (FS) Ext Hd">540 or 562 (FS) Ext Hd</option><option value="400 or 387 Adapter to Protector">400 or 387 Adapter to Protector</option><option value="738 Adapter to Protector">738 Adapter to Protector</option><option value="738 (FS) Adapter to Protector">738 (FS) Adapter to Protector</option><option value="738">738</option><option value="540 or 562 (FS) Adapter to Protector">540 or 562 (FS) Adapter to Protector</option><option value="540 or 562 Adapter to Protector">540 or 562 Adapter to Protector</option></select>
+      </div>
+      <div class="field">
+        <div class="flabel">Shaft Pro</div>
+        <select id="tab5-v4"><option value="" disabled selected>— Select —</option><option value="0.75">0.75</option><option value="0.87">0.87</option><option value="1.00">1.00</option><option value="1.18">1.18</option><option value="1.50">1.50</option></select>
+      </div>
+    </div>
+
+  </div>
+  <div class="result-area" id="tab5-result"></div>
+</div>
+
+<div class="panel" id="tab6">
+  <div class="ptitle">Protector To Motor</div>
+  <div class="psub">Select all four values then click GET</div>
+  <div class="grid">
+
+    <div class="card left">
+      <div class="clabel"><span class="dot"></span>Protector</div>
+      <div class="field">
+        <div class="flabel">Protector Series</div>
+        <select id="tab6-v1"><option value="" disabled selected>— Select —</option><option value="325/375">325/375</option><option value="387/456">387/456</option><option value="387/456 Max">387/456 Max</option><option value="400/375">400/375</option><option value="400/456">400/456</option><option value="400/456 Max">400/456 Max</option><option value="540">540</option><option value="562">562</option><option value="738/540">738/540</option><option value="738">738</option><option value="738/562">738/562</option><option value="738/562(66L type)">738/562(66L type)</option><option value="738/562 (modular type)">738/562 (modular type)</option><option value="950/738">950/738</option><option value="950/738">950/738</option></select>
+      </div>
+      <div class="field">
+        <div class="flabel">Shaft Protector</div>
+        <select id="tab6-v2"><option value="" disabled selected>— Select —</option><option value="0.75">0.75</option><option value="0.87">0.87</option><option value="1.18">1.18</option><option value="1.50">1.50</option><option value="1.50 Inv">1.50 Inv</option><option value="2.00">2.00</option><option value="2.00 Inv">2.00 Inv</option><option value="1.50, 6B">1.50, 6B</option></select>
+      </div>
+    </div>
+
+    <div class="mid">
+      <div class="vline"></div>
+      <button class="getbtn" onclick="getResult('tab6')">GET</button>
+      <div class="vline"></div>
+    </div>
+
+    <div class="card right">
+      <div class="clabel right"><span class="dot"></span>Motor</div>
+      <div class="field">
+        <div class="flabel">Motor Series</div>
+        <select id="tab6-v3"><option value="" disabled selected>— Select —</option><option value="375">375</option><option value="540">540</option><option value="456 Adapter to Motor">456 Adapter to Motor</option><option value="540 Adapter to Motor">540 Adapter to Motor</option><option value="375 Adapter to Motor">375 Adapter to Motor</option><option value="456">456</option><option value="375 Adapter to Motor">375 Adapter to Motor</option><option value="456 Coupling Adapter">456 Coupling Adapter</option><option value="456 RX Dominator UT">456 RX Dominator UT</option><option value="562-L Dominator">562-L Dominator</option><option value="562 XD Dominator (S or UT)">562 XD Dominator (S or UT)</option><option value="738 Adapter to Motor">738 Adapter to Motor</option><option value="562">562</option><option value="562 Adapter to Motor">562 Adapter to Motor</option><option value="562 XD Dominator (UT for high-horsepower applications)">562 XD Dominator (UT for high-horsepower applications)</option><option value="562 XD Dominator (S or UT) Adaptor to Motor">562 XD Dominator (S or UT) Adaptor to Motor</option><option value="738 Dominator">738 Dominator</option></select>
+      </div>
+      <div class="field">
+        <div class="flabel">Shaft Motor</div>
+        <select id="tab6-v4"><option value="" disabled selected>— Select —</option><option value="0.87">0.87</option><option value="1.12">1.12</option><option value="1.18">1.18</option><option value="1.37">1.37</option><option value="1.12 Inv">1.12 Inv</option><option value="1.37 Inv">1.37 Inv</option><option value="1.50">1.50</option><option value="2.00 Inv">2.00 Inv</option></select>
+      </div>
+    </div>
+
+  </div>
+  <div class="result-area" id="tab6-result"></div>
+</div>
+
+</main>
+
+<footer>
+  <a href="https://www.facebook.com/uta.issei.mark.zuckeberg.zuck?mibextid=ZbWKwL" target="_blank">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+    Facebook
+  </a>
+  <a href="mailto:petfraj1153@gmail.com">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,4 12,12 22,4"/></svg>
+    Email
+  </a>
+</footer>
+
+<script>
+const RULES = {"tab1": [["338", "0.44 H", "338", "0.44 H", "O-ring: 2-227 , Coupling: 953406 , Wrench: 1/2 , Torque: 12"], ["338", "0.62", "338", "0.62", "O-ring: 2-227 , Coupling: 239475 , Wrench: 1/2 , Torque: 12"], ["338", "0.68", "338", "0.68", "O-ring: 2-227 , Coupling: 155259 , Wrench: 1/2 , Torque: 12"], ["387", "0.62", "387", "0.62", "O-ring: 2-228, Coupling: 0997098 or 100571058 , Wrench: 1/2 , Torque: 12"], ["387 (FS)", "0.62", "387 (FS)", "0.62", "O-ring: 2-228, Coupling: 100321514/100570698 , Wrench: 1/2 , Torque: 12"], ["387", "0.62", "387 (FS)", "0.62", "O-ring: 2-228, Coupling: 100321514 or 100570698 , Wrench: 1/2 , Torque: 12"], ["387 (FS)", "0.62", "387", "0.62", "O-ring: 2-228, Coupling: 100321514 or 100570698 , Wrench: 1/2 , Torque: 12"], ["387", "0.68", "387", "0.68", "O-ring: 2-228, Coupling: 155259/100570039 , Wrench: 1/2 , Torque: 12"], ["387 (FS)", "0.68", "387 (FS)", "0.68", "O-ring: 2-228, Coupling:100263827/100570706 , Wrench: 1/2 , Torque: 12"], ["387", "0.68", "387 (FS)", "0.68", "O-ring: 2-228, Coupling:100263827 or 100570706 , Wrench: 1/2 , Torque: 12"], ["387 (FS)", "0.68", "387", "0.68", "O-ring: 2-228, Coupling:100263827 or 100570706 , Wrench: 1/2 , Torque: 12"], ["387", "0.87", "387", "0.87", "O-ring: 2-228, Coupling: 178301/100567606 , Wrench: 1/2 , Torque: 12"], ["387 (FS)", "0.87", "387 (FS)", "0.87", "O-ring: 2-228, Coupling: 100134735/100571889 , Wrench: 1/2 , Torque: 12"], ["387", "0.87", "387 (FS)", "0.87", "O-ring: 2-228, Coupling: 100134735 or 100571889 , Wrench: 1/2 , Torque: 12"], ["387 (FS)", "0.87", "387", "0.87", "O-ring: 2-228, Coupling: 100134735 or 100571889 , Wrench: 1/2 , Torque: 12"], ["387 Ext Sft", "0.87", "387 Ext Hd", "0.87", "O-ring: 2-228, Coupling: 178301/100567606 , Wrench: 1/4 Allen, Torque: 12"], ["387 Ext Sft (FS)", "0.87", "387 Ext Hd (FS)", "0.87", "O-ring: 2-228, Coupling: 100134735/100571889 , Wrench: 1/4 Allen, Torque: 12"], ["387 Ext Sft (FS)", "0.87", "387 Ext Hd", "0.87", "O-ring: 2-228, Coupling: 100134735 or 100571889 , Wrench: 1/4 Allen, Torque: 12"], ["387 Ext Sft", "0.87", "387 Ext Hd (FS)", "0.87", "O-ring: 2-228, Coupling: 100134735 or 100571889 , Wrench: 1/4 Allen, Torque: 12"], ["400", "0.62", "400", "0.62", "O-ring: 2-228, Coupling: 0997098 or 100571058 , Wrench: 1/2, Torque: 12"], ["400 (FS)", "0.62", "400 (FS)", "0.62", "O-ring: 2-228, Coupling: 100321514/100570698 , Wrench: 1/2, Torque: 12"], ["400", "0.62", "400 (FS)", "0.62", "O-ring: 2-228, Coupling: 100321514 or 100570698 , Wrench: 1/2, Torque: 12"], ["400 (FS)", "0.62", "400", "0.62", "O-ring: 2-228, Coupling: 100321514 or 100570698 , Wrench: 1/2, Torque: 12"], ["400", "0.68", "400", "0.68", "O-ring: 2-228, Coupling: 155259/100570039 , Wrench: 1/2, Torque: 12"], ["400 (FS)", "0.68", "400 (FS)", "0.68", "O-ring: 2-228, Coupling: 100263827/100570706 , Wrench: 1/2, Torque: 12"], ["400", "0.68", "400 (FS)", "0.68", "O-ring: 2-228, Coupling: 100263827 or 100570706 , Wrench: 1/2, Torque: 12"], ["400 (FS)", "0.68", "400", "0.68", "O-ring: 2-228, Coupling: 100263827 or 100570706 , Wrench: 1/2, Torque: 12"], ["400", "0.87", "400", "0.87", "O-ring: 2-228, Coupling: 178301/100567606 , Wrench: 1/2, Torque: 12"], ["400 (FS)", "0.87", "400 (FS)", "0.87", "O-ring: 2-228, Coupling: 100134735/100571889 , Wrench: 1/2, Torque: 12"], ["400", "0.87", "400 (FS)", "0.87", "O-ring: 2-228, Coupling: 100134735 or 100571889 , Wrench: 1/2, Torque: 12"], ["400 (FS)", "0.87", "400", "0.87", "O-ring: 2-228, Coupling: 100134735 or 100571889 , Wrench: 1/2, Torque: 12"], ["400 Ext Sft", "0.87", "400 Ext Hd", "0.87", "O-ring: 2-228, Coupling: 178301/100567606 , Wrench: 1/4 Allen, Torque: 12"], ["400 (FS) Ext Sft", "0.87", "400 (FS) Ext Hd", "0.87", "O-ring: 2-228, Coupling: 100134735/100571889 , Wrench: 1/4 Allen Torque: 12"], ["400 Ext Sft", "0.87", "400 (FS) Ext Hd", "0.87", "O-ring: 2-228, Coupling: 100134735 or 100571889, Wrench: 1/4 Allen Torque: 12"], ["400 (FS) Ext Sft", "0.87", "400 Ext Hd", "0.87", "O-ring: 2-228, Coupling: 100134735 or 100571889, Wrench: 1/4 Allen Torque: 12"], ["450", "0.75", "450", "0.75", "O-ring: 2-231, Coupling: 156620 , Wrench: 5/8 Torque: 26"], ["450", "0.87", "450", "0.87", "O-ring: 2-231, Coupling: 178301/100567606 , Wrench: 5/8 Torque: 26"], ["538", "0.87", "538", "0.87", "O-ring: 2-237 , Coupling: 178301/100567606 , Wrench: 5/8 Torque: 26"], ["538", "1.00", "538", "1.00", "O-ring: 2-237 , Coupling: 155192 , Wrench: 5/8 Torque: 26"], ["538 (FS)", "1.00", "538 (FS)", "1.00", "O-ring: 2-237 , Coupling: 100135005 , Wrench: 5/8 Torque: 26"], ["538", "1.00", "538 (FS)", "1.00", "O-ring: 2-237 , Coupling: 100135005 +shims , Wrench: 5/8 Torque: 26"], ["538 (FS)", "1.00", "538", "1.00", "O-ring: 2-237 , Coupling: 100135005 +shims , Wrench: 5/8 Torque: 26"], ["540", "0.87", "540", "0.87", "O-ring: 2-237 , Coupling: 178301/100567606 , Wrench: 5/8 Torque: 26"], ["540", "1.00", "540", "1.00", "O-ring: 2-237 , Coupling: 155192 , Wrench: 5/8 Torque: 26"], ["540 (FS)", "1.00", "540 (FS)", "1.00", "O-ring: 2-237 , Coupling: 100135005, Wrench: 5/8 Torque: 26"], ["540", "1.00", "540 (FS)", "1.00", "O-ring: 2-237 , Coupling: 100135005 +shims , Wrench: 5/8 Torque: 26"], ["540 (FS)", "1.00", "540", "1.00", "O-ring: 2-237 , Coupling: 100135005 +shims , Wrench: 5/8 Torque: 26"], ["540", "1.18", "540", "1.18", "O-ring: 2-237 , Coupling: 230300 , Wrench: 5/8 Torque: 26"], ["562", "1.00", "562", "1.00", "O-ring: 2-241 , Coupling: 155192 , Wrench: 5/8 Torque: 26"], ["562", "1.00", "562/540", "1.00", "O-ring: 2-241 , Coupling: 155192 , Wrench: 5/8 Torque: 26"], ["562", "1.18", "562", "1.18", "O-ring: 2-241 , Coupling: 230300 , Wrench: 5/8 Torque: 26"], ["562 (FS)", "1.18", "562 (FS)", "1.18", "O-ring: 2-241 , Coupling: 100191221 , Wrench: 5/8 Torque: 26"], ["562", "1.18", "562 (FS)", "1.18", "O-ring: 2-241 , Coupling: 100191221 +Shims , Wrench: 5/8 Torque: 26"], ["562 (FS)", "1.18", "562", "1.18", "O-ring: 2-241 , Coupling: 100191221 +Shims , Wrench: 5/8 Torque: 26"], ["562", "1.18", "562/540", "1.18", "O-ring: 2-241 , Coupling: 230300 , Wrench: 5/8 Torque: 26"], ["562 (FS)", "1.18", "562/540 (FS)", "1.18", "O-ring: 2-241 , Coupling: 100191221, Wrench: 5/8 Torque: 26"], ["562", "1.18", "562/540 (FS)", "1.18", "O-ring: 2-241 , Coupling: 100191221 +Shims , Wrench: 5/8 Torque: 26"], ["562 (FS)", "1.18", "562/540", "1.18", "O-ring: 2-241 , Coupling: 100191221 +Shims , Wrench: 5/8 Torque: 26"], ["675", "1.18", "675", "1.18", "O-ring: 2-246 , Coupling: 207480 , Wrench: 3/4 Torque: 43"], ["675 (FS)", "1.18", "675 (FS)", "1.18", "O-ring: 2-246 , Coupling: 100191221 , Wrench: 3/4 Torque: 43"], ["675", "1.18", "675 (FS)", "1.18", "O-ring: 2-246 , Coupling: 100191221 +shims , Wrench: 3/4 Torque: 43"], ["675 (FS)", "1.18", "675", "1.18", "O-ring: 2-246 , Coupling: 100191221 +shims , Wrench: 3/4 Torque: 43"], ["675", "1.18", "675/738 or 540", "1.18", "O-ring: 2-246 , Coupling: 207480 , Wrench: 3/4 Torque: 43"], ["675 (FS)", "1.18", "675/738 or 540 (FS)", "1.18", "O-ring: 2-246 , Coupling: 100191221 , Wrench: 3/4 Torque: 43"], ["675", "1.18", "675/738 or 540 (FS)", "1.18", "O-ring: 2-246 , Coupling: 100191221 +shims , Wrench: 3/4 Torque: 43"], ["675 (FS)", "1.18", "675/738 or 540", "1.18", "O-ring: 2-246 , Coupling: 100191221 +shims , Wrench: 3/4 , Torque: 43"], ["725", "1.18", "725", "1.18", "O-ring: 2-254, Coupling: 207480 , Wrench: 3/8 Allen , Torque: 43"], ["725", "1.50", "725", "1.50", "O-ring: 2-254, Coupling: 1310218 , Wrench: 3/8 Allen , Torque: 43"], ["862", "1.37", "862", "1.37", "O-ring: 2-259 , Coupling: 1033802/100570050 , Wrench: 3/4 , Torque: 43"], ["862", "1.37", "862/738", "1.37", "O-ring: 2-259 , Coupling: 1033802/100570050 , Wrench: 3/4 , Torque: 43"], ["950", "1.50", "950", "1.50", "O-ring: 2-259 , Coupling: 0213124 , Wrench: 7/8 , Torque: 86"], ["1000", "1.75", "1000", "1.75", "O-ring: 2-261 , Coupling: 2000647, Wrench: 7/8 , Torque: 86"], ["1000", "1.75", "1000/738", "1.75", "O-ring: 2-261 , Coupling: 2000647, Wrench: 7/8 , Torque: 86"]], "tab2": [["338", "0.62", "387 Adapter to AGH", "0.62", "O-ring: 2-227 & 2-228, Coupling: DNE, Wrench: 1/2 & 1/2 , Torque: 12"], ["338", "0.68", "387 Adapter to AGH", "0.68", "O-ring: 2-227 & 2-228, Coupling: DNE, Wrench: 1/2 & 1/2 , Torque: 12"], ["387", "0.62", "387", "0.62", "O-ring: 2-228, Coupling: 232942, Wrench: 1/2  , Torque: 12"], ["387 (FS)", "0.62", "387 (FS)", "0.62", "O-ring: 2-228, Coupling: DNE, Wrench: 1/2  , Torque: 12"], ["387", "0.68", "387", "0.68", "O-ring: 2-228, Coupling:155259/100570039 ,  Wrench: 1/2  , Torque: 12"], ["387", "0.68", "387 (FS)", "0.68", "O-ring: 2-228, Coupling:100263827 or 100570706 ,  Wrench: 1/2  , Torque: 12"], ["387 (FS)", "0.68", "387", "0.68", "O-ring: 2-228, Coupling:100263827 or 100570706 ,  Wrench: 1/2  , Torque: 12"], ["387", "0.68", "387 Ext Hd", "0.87", "O-ring: 2-228, Coupling:2005972 ,  Wrench: 1/4 Allen  , Torque: 12"], ["387 (FS)", "0.68", "387 (FS) Ext Hd", "0.87", "O-ring: 2-228, Coupling: 100267481/100570680 ,  Wrench: 1/4 Allen  , Torque: 12"], ["387", "0.68", "387 (FS) Ext Hd", "0.87", "O-ring: 2-228, Coupling: 100267481 or 100570680 ,  Wrench: 1/4 Allen  , Torque: 12"], ["387 (FS)", "0.68", "387 Ext Hd", "0.87", "O-ring: 2-228, Coupling: 100267481 or 100570680 ,  Wrench: 1/4 Allen  , Torque: 12"], ["387", "0.87", "387 Ext Hd", "0.87", "O-ring: 2-228, Coupling: 2000184 ,  Wrench: 1/4 Allen  , Torque: 12"], ["387 (FS)", "0.87", "387 (FS) Ext Hd", "0.87", "O-ring: 2-228, Coupling: 100254539/100567652 ,  Wrench: 1/4 Allen  , Torque: 12"], ["387", "0.87", "387 (FS) Ext Hd", "0.87", "O-ring: 2-228, Coupling: 100254539 or 100567652 ,  Wrench: 1/4 Allen  , Torque: 12"], ["387 (FS)", "0.87", "387 Ext Hd", "0.87", "O-ring: 2-228, Coupling: 100254539 or 100567652 ,  Wrench: 1/4 Allen  , Torque: 12"], ["387 Ext Sft", "0.87", "387 Ext Hd", "0.87", "O-ring: 2-228, Coupling: 178301/100567606,  Wrench: 1/4 Allen  , Torque: 12"], ["387 (FS) Ext Sft", "0.87", "387 (FS) Ext Hd", "0.87", "O-ring: 2-228, Coupling: 100134735/100571889,  Wrench: 1/4 Allen  , Torque: 12"], ["387 Ext Sft", "0.87", "387 (FS) Ext Hd", "0.87", "O-ring: 2-228, Coupling: 100134735 or 100571889,  Wrench: 1/4 Allen  , Torque: 12"], ["387 (FS) Ext Sft", "0.87", "387 Ext Hd", "0.87", "O-ring: 2-228, Coupling: 100134735 or 100571889,  Wrench: 1/4 Allen  , Torque: 12"], ["400", "0.62", "400", "0.62", "O-ring: 2-228, Coupling: 232942,  Wrench: 1/2  , Torque: 12"], ["400 (FS)", "0.62", "400 (FS)", "0.68", "O-ring: 2-228, Coupling: 100571617,  Wrench: 1/2  , Torque: 12"], ["400 (FS)", "0.62", "400", "0.68", "O-ring: 2-228, Coupling: 100571617,  Wrench: 1/2  , Torque: 12"], ["400", "0.62", "400 (FS)", "0.68", "O-ring: 2-228, Coupling: 100571617,  Wrench: 1/2  , Torque: 12"], ["400", "0.62", "400 Ext Hd", "0.87", "O-ring: 2-228, Coupling: 2007598,  Wrench: 1/4 Allen  , Torque: 12"], ["400", "0.68", "400", "0.68", "O-ring: 2-228, Coupling: 155259/100570039,  Wrench: 1/2 , Torque: 12"], ["400 (FS)", "0.68", "400 (FS)", "0.68", "O-ring: 2-228, Coupling: 100263827/100570706,  Wrench: 1/2 , Torque: 12"], ["400 (FS)", "0.68", "400", "0.68", "O-ring: 2-228, Coupling: 100263827 or 100570706,  Wrench: 1/2 , Torque: 12"], ["400", "0.68", "400 (FS)", "0.68", "O-ring: 2-228, Coupling: 100263827 or 100570706,  Wrench: 1/2 , Torque: 12"], ["400", "0.68", "400 Ext Hd", "0.87", "O-ring: 2-228, Coupling: 2005972,  Wrench: 1/4 Allen , Torque: 12"], ["400 (FS)", "0.68", "400 (FS) Ext Hd", "0.87", "O-ring: 2-228, Coupling: 100267481,  Wrench: 1/4 Allen , Torque: 12"], ["400 (FS)", "0.68", "400 Ext Hd", "0.87", "O-ring: 2-228, Coupling: 100267481 +shims,  Wrench: 1/4 Allen , Torque: 12"], ["400", "0.68", "400 (FS) Ext Hd", "0.87", "O-ring: 2-228, Coupling: 100267481 +shims,  Wrench: 1/4 Allen , Torque: 12"], ["400", "0.87", "400 Ext Hd", "0.87", "O-ring: 2-228, Coupling: 2000184,  Wrench: 1/4 Allen , Torque: 12"], ["400 (FS)", "0.87", "400 (FS) Ext Hd", "0.87", "O-ring: 2-228, Coupling: 100254539/100567652,  Wrench: 1/4 Allen , Torque: 12"], ["400", "0.87", "400 (FS) Ext Hd", "0.87", "O-ring: 2-228, Coupling: 100254539 or 100567652,  Wrench: 1/4 Allen , Torque: 12"], ["400 (FS)", "0.87", "400 Ext Hd", "0.87", "O-ring: 2-228, Coupling: 100254539 or 100567652,  Wrench: 1/4 Allen , Torque: 12"], ["400 Ext Sft", "0.87", "400 Ext Hd", "0.87", "O-ring: 2-228, Coupling: 178301/100567606,  Wrench: 1/4 Allen , Torque: 12"], ["400 (FS) Ext Sft", "0.87", "400 (FS) Ext Hd", "0.87", "O-ring: 2-228, Coupling: 100134735/100571889,  Wrench: 1/4 Allen , Torque: 12"], ["400 (FS) Ext Sft", "0.87", "400 Ext Hd", "0.87", "O-ring: 2-228, Coupling: 100134735 or 100571889 (HS) +shims,  Wrench: 1/4 Allen , Torque: 12"], ["400", "0.87", "540", "1.00", "O-ring: 2-228 & 2=237, Coupling: DNE,  Wrench: 1/2 & 5/8 , Torque: 12 & 26"], ["400", "0.87", "540 AGH", "1.00", "O-ring: 2-228 & 2=237, Coupling: 100253234,  Wrench: 1/2 & 5/8 , Torque: 12 & 26"], ["538", "0.87", "540 AGH", "1.00", "O-ring: 2-237, Coupling: 208538,  Wrench: 5/8 , Torque: 26"], ["538", "0.87", "538 Poseidon", "1.00", "O-ring: 2-237, Coupling: 208538,  Wrench: 5/8 , Torque: 26"], ["538", "1.00", "538", "1.00", "O-ring: 2-237, Coupling: 155192,  Wrench: 5/8 , Torque: 26"], ["538 (FS)", "1.00", "538 (FS)", "1.00", "O-ring: 2-237, Coupling: 100135005,  Wrench: 5/8 , Torque: 26"], ["538", "1.00", "538 (FS)", "1.00", "O-ring: 2-237, Coupling: 100135005 +shims,  Wrench: 5/8 , Torque: 26"], ["538 (FS)", "1.00", "538", "1.00", "O-ring: 2-237, Coupling: 100135005 +shims,  Wrench: 5/8 , Torque: 26"], ["538/540", "1.00", "S50-90 Series Poseidon", "1.00", "O-ring: 2-237, Coupling: 155192,  Wrench: 5/8 , Torque: 26"], ["540", "0.87", "400 Adapter to AGH", "0.68", "O-ring: 2-237 & 2-228, Coupling: 1268481,  Wrench: 5/8 & 1/2, Torque: 26 & 12"], ["540 + 538", "0.87", "400Ext Hd Adapter AGH", "0.87", "O-ring: 2-237 & 2-228, Coupling: 1151398 +2000184,  Wrench: 5/8 & 1/4 Allen, Torque: 26 & 12"], ["540 + 538", "1.00", "400Ext Hd Adapter AGH", "0.87", "O-ring: 2-237 & 2-228, Coupling: DNE,  Wrench: 5/8 & 1/4 Allen, Torque: 26 & 12"], ["540", "0.87", "540", "1.00", "O-ring: 2-237 , Coupling: 208538,  Wrench: 5/8 , Torque: 26"], ["540", "1.00", "540", "1.00", "O-ring: 2-237 , Coupling: 155192,  Wrench: 5/8 , Torque: 26"], ["540 (FS)", "1.00", "540 (FS)", "1.00", "O-ring: 2-237 , Coupling: 100135005,  Wrench: 5/8 , Torque: 26"], ["540", "1.00", "540 (FS)", "1.00", "O-ring: 2-237 , Coupling: 100135005 +shims,  Wrench: 5/8 , Torque: 26"], ["540 (FS)", "1.00", "540", "1.00", "O-ring: 2-237 , Coupling: 100135005 +shims,  Wrench: 5/8 , Torque: 26"], ["540", "1.18", "540", "1.00", "O-ring: 2-237 , Coupling: 284729,  Wrench: 5/8 , Torque: 26"], ["562", "1.00", "562", "1.18", "O-ring: 2-241 , Coupling: 284729,  Wrench: 5/8 , Torque: 26"], ["562", "1.18", "562", "1.18", "O-ring: 2-241 , Coupling: 230300,  Wrench: 5/8 , Torque: 26"], ["562 (FS)", "1.18", "562 (FS)", "1.18", "O-ring: 2-241 , Coupling: 100191221,  Wrench: 5/8 , Torque: 26"], ["562", "1.18", "562 (FS)", "1.18", "O-ring: 2-241 , Coupling: 100191221 +Shims,  Wrench: 5/8 , Torque: 26"], ["562 (FS)", "1.18", "562", "1.18", "O-ring: 2-241 , Coupling: 100191221 +Shims,  Wrench: 5/8 , Torque: 26"], ["675", "1.18", "562", "1.18", "O-ring: 2-246 // 2-241, Coupling: 2010140,  Wrench: 3/4 // 5/8, Torque: 43 // 26"], ["675", "1.18", "675/562", "1.18", "O-ring: 2-246, Coupling: 207480,  Wrench: 3/4 , Torque: 43"], ["725", "1.18", "562", "1.18", "O-ring: 2-254 // 2-241, Coupling: 207480,  Wrench: 3/4 // 5/8 , Torque: 43 // 26"], ["725", "1.18", "725/562", "1.18", "O-ring: 2-254 , Coupling: 207480,  Wrench: 3/4  , Torque: 43"], ["862", "1.37", "562", "1.18", "O-ring: 2-259 // 2-241 , Coupling: 1290774,  Wrench: 3/4 // 5/8 , Torque: 43 // 26"], ["862", "1.37", "862/562", "1.18", "O-ring: 2-259  , Coupling: 271403,  Wrench: 3/4 , Torque: 43"]], "tab3": [["387", "0.68", "387", "0.87", "O-ring: 2-228  , Coupling: 260679/100570026,  Wrench: 1/2, Torque: 12"], ["387 (FS)", "0.68", "387 (FS)", "0.87", "O-ring: 2-228  , Coupling: 100267472/100570686,  Wrench: 1/2, Torque: 12"], ["387", "0.68", "387 (FS)", "0.87", "O-ring: 2-228  , Coupling: 100267472 or 100570686,  Wrench: 1/2, Torque: 12"], ["387 (FS)", "0.68", "387", "0.87", "O-ring: 2-228  , Coupling: 100267472 or 100570686,  Wrench: 1/2, Torque: 12"], ["387", "0.87", "387", "0.87", "O-ring: 2-228  , Coupling: 100567606/178301,  Wrench: 1/2, Torque: 12"], ["387 (FS)", "0.87", "387 (FS)", "0.87", "O-ring: 2-228  , Coupling: 100571889/100134735,  Wrench: 1/2, Torque: 12"], ["387", "0.87", "387 (FS)", "0.87", "O-ring: 2-228  , Coupling: 100571889 or 100134735,  Wrench: 1/2, Torque: 12"], ["387 (FS)", "0.87", "387", "0.87", "O-ring: 2-228  , Coupling: 100571889 or 100134735,  Wrench: 1/2, Torque: 12"], ["387 (FS) Ext Sft", "0.87", "387 (FS) Ext Hd", "0.87", "O-ring: 2-228  , Coupling: 100134735/10038050 (HS),  Wrench: 1/4 Allen, Torque: 12"], ["387 (FS) Ext Sft", "0.87", "387 Ext Hd", "0.87", "O-ring: 2-228  , Coupling: 100134735 or 100571889,  Wrench: 1/4 Allen, Torque: 12"], ["387", "0.87", "387 Ext Hd", "0.87", "O-ring: 2-228  , Coupling: 2000184,  Wrench: 1/4 Allen, Torque: 12"], ["387 (FS)", "0.87", "387 (FS) Ext Hd", "0.87", "O-ring: 2-228  , Coupling: 100254539/100567652,  Wrench: 1/4 Allen, Torque: 12"], ["387", "0.87", "387 (FS) Ext Hd", "0.87", "O-ring: 2-228  , Coupling: 100254539 or 100567652,  Wrench: 1/4 Allen, Torque: 12"], ["387 (FS)", "0.87", "387 Ext Hd", "0.87", "O-ring: 2-228  , Coupling: 100254539 or 100567652,  Wrench: 1/4 Allen, Torque: 12"], ["400", "0.68", "400", "0.87", "O-ring: 2-228  , Coupling: 260679/100570026,  Wrench: 1/2, Torque: 12"], ["400 (FS)", "0.68", "400 (FS)", "0.87", "O-ring: 2-228  , Coupling: 100267472/100570686,  Wrench: 1/2, Torque: 12"], ["400", "0.68", "400 (FS)", "0.87", "O-ring: 2-228  , Coupling: 100267472 or 100570686,  Wrench: 1/2, Torque: 12"], ["400 (FS)", "0.68", "400", "0.87", "O-ring: 2-228  , Coupling: 100267472 or 100570686,  Wrench: 1/2, Torque: 12"], ["400", "0.68", "540Adapter : intake/GS", "1.18", "O-ring: 2-228 // 2-237  , Coupling: 292995,  Wrench: 1/2 // 5/8, Torque: 12 // 26"], ["400", "0.68", "400 Ext Hd", "0.87", "O-ring: 2-228 , Coupling: 2005972 ,  Wrench: 1/4 Allen , Torque: 12"], ["400", "0.87", "400", "0.87", "O-ring: 2-228 , Coupling: 178301/100567606 ,  Wrench: 1/2 , Torque: 12"], ["400 (FS)", "0.87", "400 (FS)", "0.87", "O-ring: 2-228 , Coupling: 100134735/100571889,  Wrench: 1/2 , Torque: 12"], ["400", "0.87", "400 (FS)", "0.87", "O-ring: 2-228 , Coupling: 100134735 or 100571889,  Wrench: 1/2 , Torque: 12"], ["400 (FS)", "0.87", "400", "0.87", "O-ring: 2-228 , Coupling: 100134735 or 100571889,  Wrench: 1/2 , Torque: 12"], ["400", "0.87", "400 Ext Hd", "0.87", "O-ring: 2-228 , Coupling: 2000184,  Wrench: 1/4 Allen , Torque: 12"], ["400 (FS)", "0.87", "400 (FS) Ext Hd", "0.87", "O-ring: 2-228 , Coupling: 100254539/100567652,  Wrench: 1/4 Allen , Torque: 12"], ["400", "0.87", "400 (FS) Ext Hd", "0.87", "O-ring: 2-228 , Coupling: 100254539 or 100567652,  Wrench: 1/4 Allen , Torque: 12"], ["400 (FS)", "0.87", "400 Ext Hd", "0.87", "O-ring: 2-228 , Coupling: 100254539 or 100567652,  Wrench: 1/4 Allen , Torque: 12"], ["540", "1.00", "540", "1.18", "O-ring: 2-237 , Coupling: 284729 ,  Wrench: 5/8, Torque: 26"], ["540", "1.00", "538", "1.18", "O-ring: 2-237 , Coupling: 284729 ,  Wrench: 5/8, Torque: 26"], ["540 (FS)", "1.00", "538 (FS)", "1.18", "O-ring: 2-237 , Coupling: 100134021 ,  Wrench: 5/8, Torque: 26"], ["540", "1.00", "538 (FS)", "1.18", "O-ring: 2-237 , Coupling: 100134021 +shims ,  Wrench: 5/8, Torque: 26"], ["540 (FS)", "1.00", "538", "1.18", "O-ring: 2-237 , Coupling: 100134021 +shims ,  Wrench: 5/8, Torque: 26"], ["538", "1.00", "538", "1.18", "O-ring: 2-237 , Coupling: 100134021 ,  Wrench: 5/8, Torque: 26"], ["538", "1.00", "538 (FS)", "1.18", "O-ring: 2-237 , Coupling: 100134021 +shims ,  Wrench: 5/8, Torque: 26"], ["538 (FS)", "1.00", "538", "1.18", "O-ring: 2-237 , Coupling: 100134021 +shims ,  Wrench: 5/8, Torque: 26"]], "tab4": [["338", "0.44 H", "338/375", "0.68", "O-ring: 2-227 , Coupling: 953380 ,  Wrench: 1/2, Torque: 12"], ["338", "0.62", "338/375", "0.68", "O-ring: 2-227 , Coupling: 273383 ,  Wrench: 1/2, Torque: 12"], ["338", "0.62", "387 Adapter to Intake or GS", "0.87", "O-ring: 2-227 - 2-228 , Coupling: 1328921 ,  Wrench: 1/2 - 1/2, Torque: 12"], ["338", "0.62", "400 Adapter to Intake or GS", "0.87", "O-ring: 2-227 - 2-228 , Coupling: 1328921 ,  Wrench: 1/2 - 1/2, Torque: 12"], ["338", "0.62", "540 Adapter to Intake or GS", "1.18", "O-ring: 2-227 - 2-237 , Coupling: 491290 ,  Wrench: 1/2 - 5/8, Torque: 12 - 26"], ["338", "0.68", "338/375", "0.68", "O-ring: 2-227, Coupling: 155259/100570039 ,  Wrench: 1/2 , Torque: 12"], ["338", "0.68", "387 Adapter to Intake or GS", "0.87", "O-ring: 2-227 - 2-228, Coupling: DNE ,  Wrench: 1/2 -- 1/2 , Torque: 12"], ["338", "0.68", "400 Adapter to Intake or GS", "0.87", "O-ring: 2-227 - 2-228, Coupling: DNE ,  Wrench: 1/2 -- 1/2 , Torque: 12"], ["338", "0.68", "540 Adapter to Intake or GS", "1.18", "O-ring: 2-227 -- 2-237, Coupling: DNE ,  Wrench: 1/2 -- 5/8 , Torque: 12 -- 26"], ["387", "0.62", "387", "0.87", "O-ring: 2-228 , Coupling: 266346 ,  Wrench: 1/2 , Torque: 12"], ["387 (FS)", "0.62", "387 (FS)", "0.87", "O-ring: 2-228 , Coupling: 100330707 ,  Wrench: 1/2 , Torque: 12"], ["387", "0.62", "400 Adapter to Intake or GS", "0.87", "O-ring: 2-228 - 2-228 , Coupling: 266346 ,  Wrench: 1/2 , Torque: 12"], ["387", "0.62", "540 Adapter to Intake of GS", "1.18", "O-ring: 2-228 - 2-237 , Coupling: DNE ,  Wrench: 1/2 - 5/8 , Torque: 12 - 26"], ["387", "0.62", "562/540 Adapter to Intake or GS", "1.18", "O-ring: 2-228 - 2-241 , Coupling: DNE ,  Wrench: 1/2 - 5/8 , Torque: 12 - 26"], ["387", "0.68", "387", "0.87", "O-ring: 2-228 , Coupling: 260679/100570026 ,  Wrench: 1/2 , Torque: 12"], ["387 (FS)", "0.68", "387 (FS)", "0.87", "O-ring: 2-228 , Coupling: 100267472/100570686 ,  Wrench: 1/2 , Torque: 12"], ["387 (FS)", "0.68", "387", "0.87", "O-ring: 2-228 , Coupling: 100267472 or 100570686 ,  Wrench: 1/2 , Torque: 12"], ["387", "0.68", "387 Ext Hd", "0.87", "O-ring: 2-228 , Coupling: 2005972 ,  Wrench: 1/4 Allen , Torque: 12"], ["387/387", "0.68", "387 Poseidon", "0.87", "O-ring: 2-228 , Coupling: 2005972 ,  Wrench: 1/2 , Torque: 12"], ["387 (FS)", "0.68", "387 Ext Hd", "0.87", "O-ring: 2-228 , Coupling: 100267481 or 100570680 ,  Wrench: 1/4 Allen , Torque: 12"], ["387 (FS)", "0.68", "387 Poseidon", "0.87", "O-ring: 2-228 , Coupling: 100267481 or 100570680 ,  Wrench: 1/2 , Torque: 12"], ["387 (FS)", "0.68", "387 (FS) Ext Hd", "0.87", "O-ring: 2-228 , Coupling: 100570680/100267481 ,  Wrench: 1/4 Allen , Torque: 12"], ["387", "0.87", "387", "0.87", "O-ring: 2-228 , Coupling: 100567606/178301 ,  Wrench: 1/2 , Torque: 12"], ["387", "0.87", "387 (FS)", "0.87", "O-ring: 2-228 , Coupling: 100134735 or 100571889 ,  Wrench: 1/2 , Torque: 12"], ["387 (FS)", "0.87", "387 (FS)", "0.87", "O-ring: 2-228 , Coupling: 100134735/100571889 ,  Wrench: 1/2 , Torque: 12"], ["387 (FS)", "0.87", "387", "0.87", "O-ring: 2-228 , Coupling: 100134735 or 100571889 ,  Wrench: 1/2 , Torque: 12"], ["387", "0.87", "387 Ext Hd (FS)", "0.87", "O-ring: 2-228 , Coupling: 100254539/100567652 ,  Wrench: 1/4 Allen , Torque: 12"], ["387", "0.87", "387 Poseidon Ext Hd", "0.87", "O-ring: 2-228 , Coupling: 2000184 ,  Wrench: 1/2 , Torque: 12"], ["387 (FS)", "0.87", "387 Ext Hd (FS)", "0.87", "O-ring: 2-228 , Coupling: 100254539/100567652 ,  Wrench: 1/4 Allen , Torque: 12"], ["387", "0.87", "387 Poseidon Ext Hd (FS)", "0.87", "O-ring: 2-228 , Coupling: 100254539/100567652 ,  Wrench: 1/2 , Torque: 12"], ["387 (FS)", "0.87", "387 Ext Hd", "0.87", "O-ring: 2-228 , Coupling: 100254539 or 100567652 ,  Wrench: 1/4 Allen , Torque: 12"], ["387 (FS)", "0.87", "387 Poseidon Ext Hd", "0.87", "O-ring: 2-228 , Coupling: 100254539 or 100567652 ,  Wrench: 1/2 , Torque: 12"], ["387 Ext Sft (FS)", "0.87", "387 VGSA D20-60", "0.87", "O-ring: 2-228 , Coupling: 0178301/100567606 ,  Wrench: 1/4 Allen , Torque: 12"], ["387 Ext Sft (FS)", "0.87", "387 Poseidon Ext Hd", "0.87", "O-ring: 2-228 , Coupling: 10134735 or 100571889 ,  Wrench: 1/2 , Torque: 12"], ["387 Ext Sft (FS)", "0.87", "387 Ext Hd (FS)", "0.87", "O-ring: 2-228 , Coupling: 100571889 ,  Wrench: 1/4 Allen , Torque: 12"], ["387", "0.87", "540 Adapter to Intake or GS", "1.18", "O-ring: 2-228 - 2-237 , Coupling: DNE ,  Wrench: 1/2 - 5/8 , Torque: 12 - 26"], ["387", "0.87", "562/540 Adapter to Intake or GS", "1.18", "O-ring: 2-228 - 2-241 , Coupling: DNE ,  Wrench: 1/2 - 5/8 , Torque: 12 - 26"], ["400", "0.62", "400", "0.87", "O-ring: 2-228 , Coupling: 266346 ,  Wrench: 1/2  , Torque: 12"], ["400 (FS)", "0.62", "400 (FS)", "0.87", "O-ring: 2-228 , Coupling: 100330707 ,  Wrench: 1/2  , Torque: 12"], ["400", "0.62", "400 (FS)", "0.87", "O-ring: 2-228 , Coupling: 100330707 +shims ,  Wrench: 1/2  , Torque: 12"], ["400 (FS)", "0.62", "400", "0.87", "O-ring: 2-228 , Coupling: 100330707 +shims ,  Wrench: 1/2  , Torque: 12"], ["400", "0.62", "400 VGSA D20-60", "0.87", "O-ring: 2-228 , Coupling: 2007598 or 100571904 ,  Wrench: 1/4 Allen  , Torque: 12"], ["400", "0.62", "400 Poseidon", "0.87", "O-ring: 2-228 , Coupling: 2007598 or 100571904 ,  Wrench: 1/2  , Torque: 12"], ["400", "0.62", "540 Adapter to Intake or GS", "1.18", "O-ring: 2-228 - 2-237, Coupling: 312991 ,  Wrench: 1/2 - 5/8  , Torque: 12 - 26"], ["400", "0.62", "562/540 Adapter to Intake or GS", "1.18", "O-ring: 2-228 - 2-241, Coupling: DNE ,  Wrench: 1/2 - 5/8  , Torque: 12 - 26"], ["400", "0.68", "338", "0.68", "O-ring: 2-228 - 2-227 , Coupling: 1067313,  Wrench: 1/2 - 1/2  , Torque: 12"], ["400", "0.68", "387 Poseidon Ext Hd or VGSA", "0.87", "O-ring: 2-228 , Coupling: 100570026/2005972 ,  Wrench: 1/2   , Torque: 12"], ["400", "0.68", "400", "0.87", "O-ring: 2-228 , Coupling: 260679/100570026 ,  Wrench: 1/2   , Torque: 12"], ["400 (FS)", "0.68", "400", "0.87", "O-ring: 2-228 , Coupling: 100267472 or 100570686 ,  Wrench: 1/2   , Torque: 12"], ["400", "0.68", "400 (FS)", "0.87", "O-ring: 2-228 , Coupling: 100267472 or 100570686 ,  Wrench: 1/2   , Torque: 12"], ["400 (FS)", "0.68", "400 (FS)", "0.87", "O-ring: 2-228 , Coupling: 100267472/100570686 ,  Wrench: 1/2   , Torque: 12"], ["400", "0.68", "400 Ext Hd", "0.87", "O-ring: 2-228 , Coupling: 2005972 ,  Wrench: 1/4 Allen   , Torque: 12"], ["400", "0.68", "400 Poseidon", "0.87", "O-ring: 2-228 , Coupling: 2005972 ,  Wrench: 1/2   , Torque: 12"], ["400 (FS)", "0.68", "400 Ext Hd", "0.87", "O-ring: 2-228 , Coupling: 100267481 or 100570680 ,  Wrench: 1/4 Allen   , Torque: 12"], ["400 (FS)", "0.68", "400 Poseidon", "0.87", "O-ring: 2-228 , Coupling: 100267481 or 100570680 ,  Wrench: 1/2   , Torque: 12"], ["400", "0.68", "400 Ext Hd (FS)", "0.87", "O-ring: 2-228 , Coupling: 100267481 or 100570680 ,  Wrench: 1/4 Allen   , Torque: 12"], ["400", "0.68", "400 Poseidon (HS)", "0.87", "O-ring: 2-228 , Coupling: 100267481 or 100570680 ,  Wrench: 1/2   , Torque: 12"], ["400 (FS)", "0.68", "400 Ext Hd (FS)", "0.87", "O-ring: 2-228 , Coupling: 100267481/100570680 ,  Wrench: 1/4 Allen   , Torque: 12"], ["400 (FS)", "0.68", "400 Poseidon (FS)", "0.87", "O-ring: 2-228 , Coupling: 100267481/100570680 ,  Wrench: 1/2   , Torque: 12"], ["400", "0.68", "540 Adapter to Intake or GS", "1.18", "O-ring: 2-228 - 2-237 , Coupling: 292995 ,  Wrench: 1/2 - 5/8   , Torque: 12 - 26"], ["400", "0.68", "562/540 Adapter to Intake or GS", "1.18", "O-ring: 2-228 - 2-241 , Coupling: DNE ,  Wrench: 1/2 - 5/8   , Torque: 12 - 26"], ["400", "0.87", "400", "0.87", "O-ring: 2-228 , Coupling: 178301/100567606 ,  Wrench: 1/2  , Torque: 12"], ["400 (FS)", "0.87", "400", "0.87", "O-ring: 2-228 , Coupling: 100134735 or 100571889 ,  Wrench: 1/2  , Torque: 12"], ["400", "0.87", "400 (FS)", "0.87", "O-ring: 2-228 , Coupling: 100134735 or 100571889 ,  Wrench: 1/2  , Torque: 12"], ["400 (FS)", "0.87", "400 (FS)", "0.87", "O-ring: 2-228 , Coupling: 100134735/100571889 ,  Wrench: 1/2  , Torque: 12"], ["400", "0.87", "400 Ext Hd", "0.87", "O-ring: 2-228 , Coupling: 2000184 ,  Wrench: 1/4 Allen , Torque: 12"], ["400 (FS)", "0.87", "400 Ext Hd", "0.87", "O-ring: 2-228 , Coupling: 100254539 or 100567652 ,  Wrench: 1/4 Allen , Torque: 12"], ["400", "0.87", "400 Ext Hd (FS)", "0.87", "O-ring: 2-228 , Coupling: 100254539 or 100567652 ,  Wrench: 1/4 Allen , Torque: 12"], ["400 (FS)", "0.87", "400 Ext Hd (FS)", "0.87", "O-ring: 2-228 , Coupling: 100254539/100567652 ,  Wrench: 1/4 Allen , Torque: 12"], ["400 Ext Sft", "0.87", "400 Ext Hd", "0.87", "O-ring: 2-228 , Coupling: 178301/100567606 ,  Wrench: 1/4 Allen , Torque: 12"], ["400 Ext Sft (FS)", "0.87", "400 Ext Hd", "0.87", "O-ring: 2-228 , Coupling: 100134735 or 100571889 ,  Wrench: 1/4 Allen , Torque: 12"], ["400 Ext Sft (FS)", "0.87", "400 Ext Hd (FS)", "0.87", "O-ring: 2-228 , Coupling: 100134735/100571889 ,  Wrench: 1/4 Allen , Torque: 12"], ["400 Ext Sft", "0.87", "400 Ext Hd (FS)", "0.87", "O-ring: 2-228 , Coupling: 100134735 or 100571889 ,  Wrench: 1/4 Allen , Torque: 12"], ["400", "0.87", "540 Adapter to Intake or GS", "1.18", "O-ring: 2-228 - 2-237 , Coupling: 100245078 ,  Wrench: 1/2 - 5/8 , Torque: 12 - 26"], ["400", "0.87", "562/540 Adapter to Intake or GS", "1.18", "O-ring: 2-228 - 2-241 , Coupling: DNE ,  Wrench: 1/2 - 5/8 , Torque: 12 - 26"], ["400", "0.87", "400 Poseidon", "0.87", "O-ring: 2-228  , Coupling: 2000184 ,  Wrench: 1/2  , Torque: 12"], ["400 Ext Sft", "0.87", "400 Poseidon", "0.87", "O-ring: 2-228  , Coupling: 178301/100567606 ,  Wrench: 1/2  , Torque: 12"], ["538", "0.87", "400 Adapter to Intake or GS", "0.87", "O-ring: 2-237 - 2-228 , Coupling: 1151398 ,  Wrench: 5/8 - 1/2  , Torque: 26 - 12"], ["538/540 (FS)", "0.87", "540 (FS)", "0.87", "O-ring: 2-237  , Coupling: 100134735 or 100571889 ,  Wrench: 5/8  , Torque: 26"], ["538", "0.87", "540", "1.18", "O-ring: 2-237  , Coupling: 266445 ,  Wrench: 5/8  , Torque: 26"], ["538/540", "0.87", "540 (FS)", "1.18", "O-ring: 2-237  , Coupling: DNE ,  Wrench: 5/8  , Torque: 26"], ["538/540 (FS)", "0.87", "540 (FS)", "1.18", "O-ring: 2-237  , Coupling: DNE ,  Wrench: 5/8  , Torque: 26"], ["538/540 (FS)", "0.87", "540", "1.18", "O-ring: 2-237  , Coupling: DNE ,  Wrench: 5/8  , Torque: 26"], ["538", "0.87", "562/540 Adapter to Intake or GS", "1.18", "O-ring: 2-237 - 2-241  , Coupling: DNE ,  Wrench: 5/8 - 5/8  , Torque: 26"], ["538", "0.87", "675/540 Adapter to Intake or GS", "1.18", "O-ring: 2-237 - 2-246  , Coupling: DNE ,  Wrench: 5/8 - 3/4  , Torque: 26 - 43"], ["538", "0.87", "675/738 Adapter to Intake or GS", "1.18", "O-ring: 2-237 - 2-246  , Coupling: DNE ,  Wrench: 5/8 - 3/4  , Torque: 26 - 43"], ["538", "1.00", "400 Adapter to Intake or GS", "0.87", "O-ring: 2-237 - 2-228  , Coupling: 902221 ,  Wrench: 5/8 - 1/2  , Torque: 26 - 12"], ["538", "1.00", "540", "1.18", "O-ring: 2-237  , Coupling: 284729 ,  Wrench: 5/8  , Torque: 26"], ["538/540", "1.00", "540 (FS)", "1.18", "O-ring: 2-237  , Coupling: 100134021 + shims ,  Wrench: 5/8  , Torque: 26"], ["538/540 (FS)", "1.00", "540 (FS)", "1.18", "O-ring: 2-237  , Coupling: 100134021 ,  Wrench: 5/8  , Torque: 26"], ["538/540 (FS)", "1.00", "540", "1.18", "O-ring: 2-237  , Coupling: 100134021 +shims ,  Wrench: 5/8  , Torque: 26"], ["538", "1.00", "562/540 Adapter to Intake or GS", "1.18", "O-ring: 2-237 - 2-241  , Coupling: DNE ,  Wrench: 5/8 - 5/8  , Torque: 26"], ["538", "1.00", "675/540 Adapter to Intake or GS", "1.18", "O-ring: 2-237 - 2-246  , Coupling: DNE ,  Wrench: 5/8 - 3/4  , Torque: 26 - 43"], ["538", "1.00", "675/738 Adapter to Intake or GS", "1.18", "O-ring: 2-237 - 2-246  , Coupling: DNE ,  Wrench: 5/8 - 3/4  , Torque: 26 - 43"], ["540", "0.87", "400 Adapter to Intake or GS", "0.87", "O-ring: 2-237 - 2-228  , Coupling: 1151398 ,  Wrench: 5/8 - 1/2  , Torque: 26 - 12"], ["540", "1.00", "540 (FS)", "1.18", "O-ring: 2-237   , Coupling: DNE ,  Wrench: 5/8   , Torque: 26"], ["540 (FS)", "1.00", "540 (FS)", "1.18", "O-ring: 2-237   , Coupling: DNE ,  Wrench: 5/8   , Torque: 26"], ["540 (FS)", "1.00", "540", "1.18", "O-ring: 2-237   , Coupling: DNE ,  Wrench: 5/8   , Torque: 26"], ["540", "0.87", "540", "1.18", "O-ring: 2-237   , Coupling: 266445 ,  Wrench: 5/8   , Torque: 26"], ["540", "0.87", "562/540 Adapter to Intake or GS", "1.18", "O-ring: 2-237 - 2-241   , Coupling: DNE ,  Wrench: 5/8 - 5/8   , Torque: 26"], ["540", "0.87", "675/540 Adapter to Intake or GS", "1.18", "O-ring: 2-237 - 2-246   , Coupling: DNE ,  Wrench: 5/8 - 3/4   , Torque: 26 - 43"], ["540", "0.87", "675/738 Adapter to Intake or GS", "1.18", "O-ring: 2-237 - 2-246   , Coupling: DNE ,  Wrench: 5/8 - 3/4   , Torque: 26 - 43"], ["540", "1.00", "400 Adapter to Intake or GS", "0.87", "O-ring: 2-237 - 2-228   , Coupling: 902221 ,  Wrench: 5/8 - 1/2   , Torque: 26 - 12"], ["540", "1.00", "540", "1.18", "O-ring: 2-237    , Coupling: 284729 ,  Wrench: 5/8   , Torque: 26"], ["540", "1.00", "562/540 Adapter to Intake or GS", "1.18", "O-ring: 2-237 - 2-241 , Coupling: DNE ,  Wrench: 5/8 - 5/8   , Torque: 26"], ["540", "1.00", "675/540 Adapter to Intake or GS", "1.18", "O-ring: 2-237 - 2-246 , Coupling: DNE ,  Wrench: 5/8 - 3/4   , Torque: 26 - 43"], ["540", "1.00", "675/738 Adapter to Intake or GS", "1.18", "O-ring: 2-237 - 2-246 , Coupling: DNE ,  Wrench: 5/8 - 3/4   , Torque: 26 - 43"], ["540", "1.18", "540", "1.18", "O-ring: 2-237  , Coupling: 230300 ,  Wrench: 5/8    , Torque: 26"], ["540", "1.18", "562/540 Adapter to Intake or GS", "1.18", "O-ring: 2-237 - 2-241 , Coupling: DNE ,  Wrench: 5/8 - 5/8    , Torque: 26"], ["540", "1.18", "675/540 Adapter to Intake or GS", "1.18", "O-ring: 2-237 - 2-246 , Coupling: DNE ,  Wrench: 5/8 - 3/4    , Torque: 26 - 43"], ["540", "1.18", "675/738 Adapter to Intake or GS", "1.18", "O-ring: 2-237 - 2-246 , Coupling: DNE ,  Wrench: 5/8 - 3/4    , Torque: 26 - 43"], ["562", "1.00", "540", "1.18", "O-ring: 2-241 - 2-237 , Coupling: 2000146 ,  Wrench: 5/8 - 5/8    , Torque: 26"], ["562", "1.00", "562/540", "1.18", "O-ring: 2-241  , Coupling: 284729 ,  Wrench: 5/8  , Torque: 26"], ["562", "1.00", "675/540 Adapter to Intake or GS", "1.18", "O-ring: 2-241 - 2-246  , Coupling: 2015102 ,  Wrench: 5/8 - 3/4 , Torque: 26 - 43"], ["562", "1.00", "675/738 Adapter to Intake or GS", "1.18", "O-ring: 2-241 - 2-246  , Coupling: 2015102 ,  Wrench: 5/8 - 3/4 , Torque: 26 - 43"], ["675", "1.18", "675/540", "1.18", "O-ring:  2-246  , Coupling: 0230300 ,  Wrench: 3/4 , Torque:  43"], ["675", "1.18", "675/738", "1.18", "O-ring:  2-246  , Coupling: 0230300 ,  Wrench: 3/4 , Torque:  43"], ["675", "1.18", "538 Adapter to GS", "1.18", "O-ring: 2-246 - 2-237  , Coupling: 2000964 ,  Wrench: 3/4 - 5/8 , Torque:  43 - 26"], ["675", "1.18", "562/540 Adapter to Intake or GS", "1.18", "O-ring: 2-246 - 2-241  , Coupling: DNE ,  Wrench: 3/4 - 5/8 , Torque:  43 - 26"], ["675 (FS)", "1.18", "675/540 or 738 (FS)", "1.18", "O-ring: 2-246 , Coupling: 100191221 ,  Wrench: 3/4  , Torque:  43"], ["675", "1.18", "675/540 or 738 (FS)", "1.18", "O-ring: 2-246 , Coupling: 100191221 +shims ,  Wrench: 3/4  , Torque:  43"], ["675 (FS)", "1.18", "675/540 or 738", "1.18", "O-ring: 2-246 , Coupling: 100191221 +shims ,  Wrench: 3/4  , Torque:  43"]], "tab5": [["338", "0.68", "375", "0.87", "O-ring: none , Coupling: 143719 ,  Wrench: 9/16  , Torque:  16"], ["338", "0.68", "325", "0.75", "O-ring: none , Coupling: 265983 ,  Wrench: 9/16  , Torque:  16"], ["338", "0.68", "387", "0.87", "O-ring: none , Coupling: 143719 ,  Wrench: 9/16  , Torque:  16"], ["338 (FS)", "0.68", "387 (FS)", "0.87", "O-ring: none , Coupling: DNE ,  Wrench: 9/16  , Torque:  16"], ["338", "0.68", "387 (FS)", "0.87", "O-ring: none , Coupling: DNE ,  Wrench: 9/16  , Torque:  16"], ["338 (FS)", "0.68", "387", "0.87", "O-ring: none , Coupling: 100267472 or 100570686 ,  Wrench: 9/16  , Torque:  16"], ["338", "0.68", "400", "0.87", "O-ring: none , Coupling: 143719 ,  Wrench: 9/16  , Torque:  16"], ["338 (FS)", "0.68", "400 (FS) Ext Hd", "0.87", "O-ring: none , Coupling: DNE ,  Wrench: 9/16  , Torque:  16"], ["338", "0.68", "400 (FS) Ext Hd", "0.87", "O-ring: none , Coupling: DNE ,  Wrench: 9/16  , Torque:  16"], ["338 (FS)", "0.68", "400", "0.87", "O-ring: none , Coupling: 100267472 or 100570686 ,  Wrench: 9/16  , Torque:  16"], ["338", "0.68", "540 Adapter to Protector", "1.18", "O-ring: none , Coupling: 276030 ,  Wrench: 9/16 - 5/8  , Torque:  16 - 26"], ["387", "0.87", "325", "0.75", "O-ring: none , Coupling: 873133 ,  Wrench: 9/16  , Torque:  16"], ["387 (FS)", "0.87", "325 (FS) Ext Hd", "0.75", "O-ring: none , Coupling: DNE ,  Wrench: 5/16 Allen  , Torque:  16"], ["387", "0.87", "325 (FS) Ext Hd", "0.75", "O-ring: none , Coupling: DNE ,  Wrench: 5/16 Allen  , Torque:  16"], ["387 (FS)", "0.87", "325", "0.75", "O-ring: none , Coupling: DNE ,  Wrench: 9/16  , Torque:  16"], ["387 Intake", "0.87", "387", "0.87", "O-ring: none , Coupling: 266429/100570012 ,  Wrench: 9/16  , Torque:  16"], ["387 GS", "0.87", "387", "0.87", "O-ring: none , Coupling: 178301/100567606 ,  Wrench: 9/16  , Torque:  16"], ["387 (FS)", "0.87", "387 (FS)", "0.87", "O-ring: none , Coupling: 100134735/100138050 ,  Wrench: 9/16  , Torque:  16"], ["400", "0.87", "400 (FS)", "0.87", "O-ring: none , Coupling: 100134735 or 100438050 ,  Wrench: 9/16  , Torque:  16"], ["387", "0.87", "387 (FS)", "0.87", "O-ring: none , Coupling: 100134735 or 100438050 ,  Wrench: 9/16  , Torque:  16"], ["400 (FS)", "0.87", "400", "0.87", "O-ring: none , Coupling: 100134735 or 100438050 ,  Wrench: 9/16  , Torque:  16"], ["387 (FS)", "0.87", "387", "0.87", "O-ring: none , Coupling: 100134735 or 100438050 ,  Wrench: 9/16  , Torque:  16"], ["400 (FS)", "0.87", "400 (FS)", "0.87", "O-ring: none , Coupling: 100134735 or 100438050 ,  Wrench: 9/16  , Torque:  16"], ["387", "0.87", "540 Adapter to Protector", "1.18", "O-ring: none , Coupling: 1346261 ,  Wrench: 9/16 - 5/8  , Torque:  16 - 26"], ["400 Intake", "0.87", "400", "0.87", "O-ring: none , Coupling: 266429/100570012 ,  Wrench: 9/16  , Torque:  16"], ["400 GS", "0.87", "400", "0.87", "O-ring: none , Coupling: 178301/100567606 ,  Wrench: 9/16  , Torque:  16"], ["400 (FS)", "0.87", "400 (FS) Ext Hd", "0.87", "O-ring: none , Coupling: 100288502 ,  Wrench: 9/16  , Torque:  16"], ["400", "0.87", "400 (FS) Ext Hd", "0.87", "O-ring: none , Coupling: 100288502 +shims ,  Wrench: 9/16  , Torque:  16"], ["400 (FS)", "0.87", "400", "0.87", "O-ring: none , Coupling: 100134735 or 100570050 ,  Wrench: 9/16  , Torque:  16"], ["400", "0.87", "325", "0.75", "O-ring: none , Coupling: 873133 ,  Wrench: 9/16  , Torque:  16"], ["400 (FS)", "0.87", "325 (FS) Ext Hd", "0.75", "O-ring: none , Coupling: DNE ,  Wrench: 5/16 Allen  , Torque:  16"], ["400", "0.87", "325 (FS) Ext Hd", "0.75", "O-ring: none , Coupling: DNE ,  Wrench: 5/16 Allen  , Torque:  16"], ["400 (FS)", "0.87", "325", "0.75", "O-ring: none , Coupling: DNE ,  Wrench: 9/16  , Torque:  16"], ["400", "0.87", "540 Adapter to Protector", "1.18", "O-ring: none , Coupling: Check it out in the connection table ,  Wrench: 9/16 - 5/8 , Torque:  16 - 26"], ["400", "0.87", "562 Adapter to Protector", "1.18", "O-ring: none , Coupling: 1346261 ,  Wrench: 9/16 - 5/8 , Torque:  16 - 26"], ["400", "0.87", "450 Adapter to Protector", "1.00", "O-ring: none , Coupling: DNE ,  Wrench: 9/16  - 9/16 , Torque:  16"], ["540 or 562", "1.18", "540 or 562", "1.18", "O-ring: none , Coupling: 230300 ,  Wrench: 5/8 , Torque:  26"], ["540 or 562 (FS)", "1.18", "540 or 562 (FS)", "1.18", "O-ring: none , Coupling: 100191221 ,  Wrench: 5/8 , Torque:  26"], ["540 or 562", "1.18", "540 or 562 (FS)", "1.18", "O-ring: none , Coupling: 100191221 +shims,  Wrench: 5/8 , Torque:  26"], ["540 or 562 (FS)", "1.18", "540 or 562 (FS) Ext Hd", "1.18", "O-ring: none , Coupling: 100280065 ,  Wrench: 5/8 , Torque:  26"], ["540", "1.18", "400 or 387 Adapter to Protector", "0.87", "O-ring: none , Coupling: 889857 ,  Wrench: 5/8 - 9/16 , Torque:  26 - 16"], ["540 (FS)", "1.18", "387 (FS)", "0.87", "O-ring: none , Coupling: 100310905 ,  Wrench: 5/8 - 9/16 , Torque:  26 - 16"], ["540", "1.18", "387 (FS)", "0.87", "O-ring: none , Coupling: 100310905 +shims ,  Wrench: 5/8 - 9/16 , Torque:  26 - 16"], ["540 (FS)", "1.18", "387", "0.87", "O-ring: none , Coupling: 100310905 +shims ,  Wrench: 5/8 - 9/16 , Torque:  26 - 16"], ["540 (FS)", "1.18", "400 (FS) Ext Hd", "0.87", "O-ring: none , Coupling: DNE ,  Wrench: 5/8 - 9/16 , Torque:  26 - 16"], ["540", "1.18", "400 (FS) Ext Hd", "0.87", "O-ring: none , Coupling: DNE ,  Wrench: 5/8 - 9/16 , Torque:  26 - 16"], ["540 (FS)", "1.18", "400", "0.87", "O-ring: none , Coupling: DNE ,  Wrench: 5/8 - 9/16 , Torque:  26 - 16"], ["540", "1.18", "738 Adapter to Protector", "1.50", "O-ring: none , Coupling: 285452 ,  Wrench: 5/8 - 13/16, Torque:  26 - 60"], ["540 (FS)", "1.18", "738 (FS) Adapter to Protector", "1.50", "O-ring: none , Coupling: DNE ,  Wrench: 5/8 - 13/16, Torque:  26 - 60"], ["540", "1.18", "738 (FS) Adapter to Protector", "1.50", "O-ring: none , Coupling: DNE ,  Wrench: 5/8 - 13/16, Torque:  26 - 60"], ["540 (FS)", "1.18", "738", "1.50", "O-ring: none , Coupling: DNE ,  Wrench: 5/8 - 13/16, Torque:  26 - 60"], ["675/540", "1.18", "540 or 562", "1.18", "O-ring: none , Coupling: 230300 ,  Wrench: 5/8  , Torque:  26"], ["675/540 (FS)", "1.18", "540 or 562 (FS)", "1.18", "O-ring: none , Coupling: 100191221 ,  Wrench: 5/8  , Torque:  26"], ["675/540", "1.18", "540 or 562 (FS)", "1.18", "O-ring: none , Coupling: 100191221 +shims ,  Wrench: 5/8  , Torque:  26"], ["675/540 (FS)", "1.18", "540 or 562", "1.18", "O-ring: none , Coupling: 100191221 +shims ,  Wrench: 5/8  , Torque:  26"], ["675/738", "1.18", "738", "1.50", "O-ring: none , Coupling: 278234 ,  Wrench: 13/16  , Torque:  60"], ["675/738", "1.18", "540 or 562 Adapter to Protector", "1.18", "O-ring: none , Coupling: 491431 ,  Wrench: 13/16 - 5/8  , Torque:  60 - 26"], ["675/738 (FS)", "1.18", "540 or 562 (FS) Adapter to Protector", "1.18", "O-ring: none , Coupling: DNE ,  Wrench: 13/16 - 5/8  , Torque:  60 - 26"], ["675/738", "1.18", "540 or 562 (FS) Adapter to Protector", "1.18", "O-ring: none , Coupling: DNE ,  Wrench: 13/16 - 5/8  , Torque:  60 - 26"], ["675/738 (FS)", "1.18", "540 or 562", "1.18", "O-ring: none , Coupling: DNE ,  Wrench: 13/16 - 5/8  , Torque:  60 - 26"]], "tab6": [["325/375", "0.75", "375", "0.87", "O-ring: 2-227 , Coupling: 244350/100570101 ,  Wrench: 9/16  , Torque:  16"], ["325/375", "0.75", "456 Adapter to Motor", "1.12", "O-ring: 2-227 - 2-231 , Coupling: DNE ,  Wrench: 9/16 - 5/8  , Torque:  16 - 26"], ["325/375", "0.75", "456 Adapter to Motor", "1.18", "O-ring: 2-227 - 2-231 , Coupling: DNE ,  Wrench: 9/16 - 5/8  , Torque:  16 - 26"], ["325/375", "0.75", "540 Adapter to Motor", "1.18", "O-ring: 2-227 - 2-237 , Coupling: DNE ,  Wrench: 9/16 - 5/8  , Torque:  16 - 26"], ["325/375", "0.75", "540 Adapter to Motor", "1.37", "O-ring: 2-227 - 2-237 , Coupling: DNE ,  Wrench: 9/16 - 5/8  , Torque:  16 - 26"], ["387/456", "0.87", "375 Adapter to Motor", "0.87", "O-ring: 2-231 - 2-227 , Coupling: DNE ,  Wrench: 5/8 - 9/16  , Torque:  26 - 16"], ["387/456", "0.87", "456", "1.12", "O-ring: 2-231  , Coupling: 243360 ,  Wrench: 5/8  , Torque:  26"], ["387/456", "0.87", "456", "1.18", "O-ring: 2-231  , Coupling: 319020 ,  Wrench: 5/8  , Torque:  26"], ["387/456 Max", "0.87", "456", "1.18", "O-ring: 2-231  , Coupling: 1313014 ,  Wrench: 5/8  , Torque:  26"], ["387/456", "0.87", "540 Adapter to Motor", "1.18", "O-ring: 2-231 - 2-237  , Coupling: 260752 ,  Wrench: 5/8 - 5/8  , Torque:  26"], ["387/456", "0.87", "540 Adapter to Motor", "1.37", "O-ring: 2-231 - 2-237  , Coupling: 402461 ,  Wrench: 5/8 - 5/8  , Torque:  26"], ["387/375", "0.87", "375", "0.87", "O-ring: 2-227  , Coupling: 244350/100570101 ,  Wrench: 9/16  , Torque: 16"], ["400/375", "0.87", "375", "0.87", "O-ring: 2-227  , Coupling: 244350/100570101 ,  Wrench: 9/16  , Torque: 16"], ["400/456", "0.87", "375 Adapter to Motor", "0.87", "O-ring: 2-231 - 2-227  , Coupling: DNE ,  Wrench: 5/8 - 9/16  , Torque: 26 - 16"], ["400/456", "0.87", "456 Coupling Adapter", "1.12", "O-ring: 2-231  , Coupling: 1203181 ,  Wrench: 5/8   , Torque: 26"], ["400/456", "0.87", "456 Coupling Adapter", "1.18", "O-ring: 2-231  , Coupling: Check it out in the connection table,  Wrench: 5/8   , Torque: 26"], ["400/456 Max", "0.87", "456", "1.18", "O-ring: 2-231  , Coupling: 1313014 ,  Wrench: 5/8   , Torque: 26"], ["400/456", "0.87", "456 RX Dominator UT", "1.18", "O-ring: 2-231  , Coupling: 1313014 ,  Wrench: 5/8   , Torque: 26"], ["400/456", "0.87", "540 Adapter to Motor", "1.18", "O-ring: 2-231  - 2-237  , Coupling: 260752 ,  Wrench: 5/8 - 5/8   , Torque: 26"], ["400/456", "0.87", "540 Adapter to Motor", "1.37", "O-ring: 2-231  - 2-237  , Coupling: 402461 ,  Wrench: 5/8 - 5/8   , Torque: 26"], ["540", "1.18", "375 Adapter to Motor", "0.87", "O-ring: 2-237 - 2-227  , Coupling: DNE ,  Wrench: 5/8 - 5/8   , Torque: 26"], ["540", "1.18", "456 Adapter to Motor", "1.12 Inv", "O-ring: 2-237 - 2-231  , Coupling: 100471912 ,  Wrench: 5/8 - 5/8   , Torque: 26"], ["540", "1.18", "456 Adapter to Motor", "1.18", "O-ring: 2-237 - 2-231  , Coupling: 217810 ,  Wrench: 5/8 - 5/8   , Torque: 26"], ["540", "1.18", "540", "1.18", "O-ring: 2-237  , Coupling: 217810 ,  Wrench: 5/8   , Torque: 26"], ["540", "1.18", "540", "1.37", "O-ring: 2-237  , Coupling: 1198340 ,  Wrench: 5/8   , Torque: 26"], ["562", "1.18", "540", "1.37", "O-ring: 2-237  , Coupling: 251934 ,  Wrench: 5/8   , Torque: 26"], ["540", "1.18", "562-L Dominator", "1.37", "O-ring: 2-237  , Coupling: 1198340 ,  Wrench: 5/8   , Torque: 26"], ["540", "1.18", "562 XD Dominator (S or UT)", "1.37 Inv", "O-ring: 2-237  , Coupling: 1067636 ,  Wrench: 5/8   , Torque: 26"], ["540", "1.18", "738 Adapter to Motor", "1.50", "O-ring: 2-237 - 2-349  , Coupling: DNE ,  Wrench: 5/8 - 13/16   , Torque: 26 - 60"], ["540", "1.18", "562", "1.37 Inv", "O-ring: 2-237  , Coupling: 1067636 ,  Wrench: 5/8    , Torque: 26"], ["562", "1.18", "562", "1.37 Inv", "O-ring: 2-237  , Coupling: 1067636 ,  Wrench: 5/8    , Torque: 26"], ["562", "1.18", "562 XD Dominator ( S or UT)", "1.37 Inv", "O-ring: 2-237  , Coupling: 1067636 ,  Wrench: 5/8    , Torque: 26"], ["562", "1.18", "562", "1.37 Inv", "O-ring: 2-237  , Coupling: 1277623 ,  Wrench: 5/8    , Torque: 26"], ["562", "1.18", "562 XD Dominator (UT for high-horsepower applications)", "1.37 Inv", "O-ring: 2-237  , Coupling: 1277623 ,  Wrench: 5/8    , Torque: 26"], ["738/540", "1.50", "540", "1.37", "O-ring: 2-237  , Coupling: 261982 ,  Wrench: 5/8    , Torque: 26"], ["738", "1.50", "540 Adapter to Motor", "1.18", "O-ring: 2-349 - 2-237  , Coupling: 261974 ,  Wrench: 13/16 - 5/8    , Torque: 60 - 26"], ["738", "1.50", "540 Adapter to Motor", "1.37", "O-ring: 2-349 - 2-237  , Coupling: 1308055 ,  Wrench: 13/16 - 5/8    , Torque: 60 - 26"], ["738/562", "1.50", "540", "1.37", "O-ring: 2-237  , Coupling: 261982 ,  Wrench:  5/8    , Torque:  26"], ["738/562", "1.50 Inv", "540", "1.37", "O-ring: 2-237  , Coupling: 1298256 ,  Wrench: 5/8    , Torque:  26"], ["738/562", "1.50", "562", "1.37 Inv", "O-ring: 2-237  , Coupling: 1255629 ,  Wrench:  5/8    , Torque:  26"], ["738/562(66L type)", "1.50", "562 XD Dominator (S or UT)", "1.37 Inv", "O-ring: 2-237  , Coupling: 1277623 ,  Wrench: 5/8    , Torque:  26"], ["738/562", "1.50 Inv", "562", "1.37 Inv", "O-ring: 2-237  , Coupling: 1297183 ,  Wrench:  5/8    , Torque:  26"], ["738/562 (modular type)", "1.50 Inv", "562 XD Dominator (S or UT)", "1.37 Inv", "O-ring: 2-237  , Coupling: 1297183 ,  Wrench:  5/8    , Torque:  26"], ["950/738", "2.00", "540 Adapter to Motor", "1.37", "O-ring: 2-349 - 2-237  , Coupling: 313072 ,  Wrench:  13/16 - 5/8    , Torque: 60 - 26"], ["738", "1.50", "562 Adapter to Motor", "1.37 Inv", "O-ring: 2-349 - 2-237  , Coupling: 1255629 ,  Wrench:  13/16 - 5/8    , Torque: 60 - 26"], ["950/738", "2.00 Inv", "562 Adapter to Motor", "1.37 Inv", "O-ring: 2-349 - 2-237  , Coupling: 1179373 ,  Wrench:  13/16 - 5/8    , Torque: 60 - 26"], ["950/738", "2.00 Inv", "562 XD Dominator (S or UT) Adaptor to Motor", "1.37 Inv", "O-ring: 2-349 - 2-237  , Coupling: 1179373 ,  Wrench:  13/16 - 5/8    , Torque: 60 - 26"], ["738", "1.50, 6B", "738 Dominator", "2.00 Inv", "O-ring: 2-349  , Coupling: 2010742 ,  Wrench:  13/16     , Torque: 60"], ["950/738", "2.00 Inv", "738 Dominator", "2.00 Inv", "O-ring: 2-349  , Coupling: 2010746 ,  Wrench:  13/16     , Torque: 60"]]};
+
+function switchTab(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.getElementById('btn-' + id).classList.add('active');
+}
+
+function parseResult(raw) {
+  // e.g. "O-ring: 2-227 , Coupling: 953406 , Wrench: 1/2 , Torque: 12"
+  return raw.split(/,(?=\s*[A-Za-z])/g).map(part => {
+    const m = part.match(/([^:]+):\s*(.+)/);
+    return m ? { k: m[1].trim(), v: m[2].trim() } : null;
+  }).filter(Boolean);
+}
+
+function getResult(tid) {
+  const v1 = document.getElementById(tid+'-v1').value;
+  const v2 = document.getElementById(tid+'-v2').value;
+  const v3 = document.getElementById(tid+'-v3').value;
+  const v4 = document.getElementById(tid+'-v4').value;
+  const area = document.getElementById(tid+'-result');
+
+  if (!v1 || !v2 || !v3 || !v4) {
+    area.innerHTML = '<div class="result-err">⚠ Please select all four values first.</div>';
+    return;
+  }
+
+  const rules = RULES[tid];
+  let found = null;
+  for (const r of rules) {
+    if (r[0]===v1 && r[1]===v2 && r[2]===v3 && r[3]===v4) {
+      found = r[4]; break;
+    }
+  }
+
+  if (found) {
+    const specs = parseResult(found);
+    area.innerHTML = `
+      <div class="result-ok">
+        <div class="rlabel">Connection Specifications Found</div>
+        <div class="specs">
+          ${specs.map(s=>`
+            <div class="spec">
+              <div class="skey">${s.k}</div>
+              <div class="sval">${s.v}</div>
+            </div>`).join('')}
+        </div>
+      </div>`;
+  } else {
+    area.innerHTML = '<div class="result-err">⚠ No matching configuration found. Please check your selections.</div>';
+  }
+}
+</script>
+</body>
+</html>
